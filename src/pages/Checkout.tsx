@@ -1,4 +1,4 @@
-import { useState, FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { MapPin, Store, Smartphone, ShieldCheck, ArrowLeft } from "lucide-react";
 import { useCart } from "../context/CartContext";
