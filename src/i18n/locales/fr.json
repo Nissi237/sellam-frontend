@@ -1,0 +1,35 @@
+{
+  "nav": { "browse": "Parcourir", "sell": "Vendre", "login": "Connexion" },
+  "home": {
+    "eyebrow": "En direct des marchés de Douala",
+    "headline": "Chaque étal. Une seule appli.",
+    "subhead": "Achetez chez des vendeurs vérifiés, ou proposez vos produits à toute la ville."
+  },
+  "auth": {
+    "loginTitle": "Connexion",
+    "registerTitle": "Créez votre compte",
+    "switchToRegister": "Pas encore de compte ? Svp Inscrivez-vous",
+    "switchToLogin": "Déjà un compte ? Connectez-vous",
+    "methodPhone": "Téléphone",
+    "methodEmail": "Email",
+    "phone": "Numéro de téléphone",
+    "email": "Adresse email",
+    "password": "Mot de passe",
+    "fullName": "Nom complet",
+    "sendCode": "Envoyer le code",
+    "codeSentNote": "Mode démo — entrez 000000 comme code",
+    "otpCode": "Code de vérification",
+    "role": "Je suis...",
+    "roleIndividualBuyer": "Acheteur individuel",
+    "roleSeller": "Vendeur de marché",
+    "roleCorporateBuyer": "Acheteur professionnel (restaurant, boutique, supermarché)",
+    "marketName": "Dans quel marché vendez-vous ?",
+    "businessName": "Nom de l'entreprise",
+    "businessRegNumber": "Numéro d'immatriculation",
+    "submitLogin": "Se connecter",
+    "submitRegister": "Créer le compte",
+    "loading": "Veuillez patienter...",
+    "successRegister": "Compte créé — Bienvenue sur Sellam la meilleure place de marché à votre service !",
+    "successLogin": "Connexion réussie !"
+  }
+}

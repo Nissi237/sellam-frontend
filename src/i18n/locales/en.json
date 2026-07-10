@@ -1,0 +1,35 @@
+{
+  "nav": { "browse": "Browse", "sell": "Sell", "login": "Log in" },
+  "home": {
+    "eyebrow": "Live from Douala's markets",
+    "headline": "Every stall. One app.",
+    "subhead": "Buy from verified sellers, or list your goods to the whole city."
+  },
+  "auth": {
+    "loginTitle": "Log in",
+    "registerTitle": "Create your account",
+    "switchToRegister": "No account yet? Please Register",
+    "switchToLogin": "Already have an account? Log in",
+    "methodPhone": "Phone",
+    "methodEmail": "Email",
+    "phone": "Phone number",
+    "email": "Email address",
+    "password": "Password",
+    "fullName": "Full name",
+    "sendCode": "Send code",
+    "codeSentNote": "Demo mode — enter 000000 as the code",
+    "otpCode": "Verification code",
+    "role": "I am a...",
+    "roleIndividualBuyer": "Individual Buyer",
+    "roleSeller": "Market Seller",
+    "roleCorporateBuyer": "Corporate Buyer (restaurant, store, supermarket)",
+    "marketName": "Which market do you sell in?",
+    "businessName": "Business name",
+    "businessRegNumber": "Business registration number",
+    "submitLogin": "Log in",
+    "submitRegister": "Create account",
+    "loading": "Please wait...",
+    "successRegister": "Account created — welcome to Sellam the best marketplace at your service!",
+    "successLogin": "Logged in successfully!" 
+  }
+}
