@@ -72,8 +72,8 @@ export default function Admin() {
   if (!isAuthenticated || user?.role !== "admin") {
     return (
       <section className="max-w-md mx-auto px-4 py-16 text-center">
-        <p className="text-forest-800/70 font-body">Accès réservé aux administrateurs.</p>
-        <Link to="/login" className="text-forest-800 underline">Se connecter</Link>
+        <p className="text-forest-800/70 font-body mb-3">Accès réservé aux administrateurs.</p>
+        <Link to="/admin/login" className="text-forest-800 underline">Portail administrateur</Link>
       </section>
     );
   }

@@ -105,6 +105,13 @@ export default function ProductDetail() {
             alt={product.name}
             className="w-full h-80 object-cover rounded-lg border border-forest-300"
           />
+          {product.videoUrl && (
+            <video
+              src={product.videoUrl}
+              controls
+              className="w-full mt-3 rounded-lg border border-forest-300 bg-black"
+            />
+          )}
         </div>
 
         <div>

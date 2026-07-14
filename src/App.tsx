@@ -23,6 +23,7 @@ import Deliver from "./pages/Deliver";
 import Subscription from "./pages/Subscription";
 import Financing from "./pages/Financing";
 import Admin from "./pages/Admin";
+import AdminLogin from "./pages/AdminLogin";
 
 export default function App() {
   return (
@@ -52,6 +53,7 @@ export default function App() {
                 <Route path="/deliver" element={<Deliver />} />
                 <Route path="/subscription" element={<Subscription />} />
                 <Route path="/financing" element={<Financing />} />
+                <Route path="/admin/login" element={<AdminLogin />} />
                 <Route path="/admin" element={<Admin />} />
               </Routes>
             </Layout>

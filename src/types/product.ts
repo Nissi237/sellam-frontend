@@ -19,6 +19,9 @@ export interface Product {
   quantityAvailable: number;
   qualityGrade?: "A" | "B" | "C" | null; // per FR-28
   photoUrl: string;
+  videoUrl?: string | null;
+  ownershipProofUrl?: string | null;
+  needsOwnershipProof?: boolean; // duplicate image, awaiting proof of ownership
   description: string;
   sellerName: string;
   sellerVerified: boolean;

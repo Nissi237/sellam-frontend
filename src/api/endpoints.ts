@@ -3,6 +3,15 @@ import type { Product } from "../types/product";
 import type { Order } from "../types/order";
 import type { User } from "../types/auth";
 
+// -------- Media upload --------
+export const uploadFile = (file: File) => {
+  const fd = new FormData();
+  fd.append("file", file);
+  return api
+    .post<{ url: string; type: "image" | "video" }>("/media", fd)
+    .then((r) => r.data);
+};
+
 // -------- Auth --------
 export interface AuthResponse {
   token: string;
@@ -16,6 +25,10 @@ export const registerUser = (payload: Record<string, unknown>) =>
 
 export const loginUser = (payload: Record<string, unknown>) =>
   api.post<AuthResponse>("/auth/login", payload).then((r) => r.data);
+
+// Admin authenticates through a separate door (see backend src/auth/admin).
+export const adminLogin = (email: string, password: string) =>
+  api.post<AuthResponse>("/admin/auth/login", { email, password }).then((r) => r.data);
 
 export const fetchMe = () =>
   api.get<{ user: User }>("/auth/me").then((r) => r.data.user);
