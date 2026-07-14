@@ -1,13 +1,16 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { ShoppingBasket, ShoppingCart } from "lucide-react";
+import { ShoppingBasket, ShoppingCart, User as UserIcon } from "lucide-react";
 import LanguageSwitcher from "./LanguageSwitcher";
+import NotificationsBell from "./NotificationsBell";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 
 export default function Layout({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
   const { totalItems } = useCart();
+  const { isAuthenticated, user } = useAuth();
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -20,7 +23,32 @@ export default function Layout({ children }: { children: ReactNode }) {
           <nav className="hidden sm:flex items-center gap-6 text-cream font-body text-sm">
             <Link to="/browse" className="hover:text-forest-300 transition">{t("nav.browse")}</Link>
             <Link to="/sell" className="hover:text-forest-300 transition">{t("nav.sell")}</Link>
-            <Link to="/login" className="hover:text-forest-300 transition">{t("nav.login")}</Link>
+            {isAuthenticated && (user?.role === "seller" || user?.role === "corporate_buyer") && (
+              <>
+                <Link to="/rfqs" className="hover:text-forest-300 transition">Devis</Link>
+                <Link to="/invoices" className="hover:text-forest-300 transition">Factures</Link>
+              </>
+            )}
+            {isAuthenticated && user?.role === "seller" && (
+              <Link to="/financing" className="hover:text-forest-300 transition">Financement</Link>
+            )}
+            {isAuthenticated && user?.role === "delivery_agent" && (
+              <Link to="/deliver" className="hover:text-forest-300 transition">Livraisons</Link>
+            )}
+            {isAuthenticated && user?.role === "admin" && (
+              <Link to="/admin" className="hover:text-forest-300 transition">Admin</Link>
+            )}
+            {isAuthenticated && (
+              <Link to="/messages" className="hover:text-forest-300 transition">Messages</Link>
+            )}
+            {isAuthenticated && <NotificationsBell />}
+            {isAuthenticated ? (
+              <Link to="/account" className="flex items-center gap-1 hover:text-forest-300 transition">
+                <UserIcon size={16} /> {user?.fullName?.split(" ")[0] ?? "Compte"}
+              </Link>
+            ) : (
+              <Link to="/login" className="hover:text-forest-300 transition">{t("nav.login")}</Link>
+            )}
             <Link to="/cart" className="relative hover:text-forest-300 transition">
               <ShoppingCart size={20} />
               {totalItems > 0 && (

@@ -3,14 +3,18 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Phone, Mail, ShieldCheck } from "lucide-react";
 import type { UserRole, AuthMethod, AuthMode } from "../types/auth";
+import { requestOtp, registerUser, loginUser } from "../api/endpoints";
+import { apiError } from "../api/client";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { login: setAuth } = useAuth();
 
   const [mode, setMode] = useState<AuthMode>("login");
   const [method, setMethod] = useState<AuthMethod>("phone");
-  const [role, setRole] = useState<UserRole>("individual_buyer");
+  const [role, setRole] = useState<UserRole | "delivery_agent">("individual_buyer");
 
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -20,27 +24,32 @@ export default function Login() {
   const [businessName, setBusinessName] = useState("");
   const [businessRegNumber, setBusinessRegNumber] = useState("");
 
+  const [referralCode, setReferralCode] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const handleSendCode = () => {
+  const handleSendCode = async () => {
     if (!phone.trim()) {
       setError(t("auth.phone") + " ?");
       return;
     }
     setError("");
-    setOtpSent(true);
-    // TODO (backend): POST /auth/otp/request { phone }
+    try {
+      await requestOtp(phone.trim());
+      setOtpSent(true);
+    } catch (err) {
+      setError(apiError(err));
+    }
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
 
-    if (method === "phone" && (!phone.trim() || (otpSent && otpCode !== "000000"))) {
+    if (method === "phone" && (!phone.trim() || (otpSent && !otpCode.trim()))) {
       setError(t("auth.otpCode") + " ?");
       return;
     }
@@ -54,14 +63,40 @@ export default function Login() {
     }
 
     setLoading(true);
-    // TODO (backend): wire to real endpoints per SRS FR-1/FR-3:
-    //   mode === "register" -> POST /auth/register { role, method, fullName, phone|email, password?, marketName?, businessName?, businessRegNumber? }
-    //   mode === "login"    -> POST /auth/login    { method, phone|email, password?, otpCode? }
-    await new Promise((resolve) => setTimeout(resolve, 800)); // simulated network delay
-    setLoading(false);
+    try {
+      let result;
+      if (mode === "register") {
+        const payload: Record<string, unknown> = { role, fullName: fullName.trim() };
+        if (method === "phone") {
+          payload.phone = phone.trim();
+          payload.otpCode = otpCode.trim();
+        } else {
+          payload.email = email.trim();
+          payload.password = password;
+        }
+        if (role === "seller") payload.marketName = marketName.trim();
+        if (role === "corporate_buyer") {
+          payload.businessName = businessName.trim();
+          payload.businessRegNumber = businessRegNumber.trim();
+        }
+        if (referralCode.trim()) payload.referralCode = referralCode.trim();
+        result = await registerUser(payload);
+      } else {
+        const payload: Record<string, unknown> =
+          method === "phone"
+            ? { phone: phone.trim(), otpCode: otpCode.trim() }
+            : { email: email.trim(), password };
+        result = await loginUser(payload);
+      }
 
-    setSuccess(mode === "register" ? t("auth.successRegister") : t("auth.successLogin"));
-    setTimeout(() => navigate("/"), 1200);
+      setAuth(result.token, result.user);
+      setSuccess(mode === "register" ? t("auth.successRegister") : t("auth.successLogin"));
+      setTimeout(() => navigate("/"), 800);
+    } catch (err) {
+      setError(apiError(err));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const inputClass =
@@ -96,12 +131,13 @@ export default function Login() {
               </label>
               <select
                 value={role}
-                onChange={(e) => setRole(e.target.value as UserRole)}
+                onChange={(e) => setRole(e.target.value as UserRole | "delivery_agent")}
                 className={inputClass}
               >
                 <option value="individual_buyer">{t("auth.roleIndividualBuyer")}</option>
                 <option value="seller">{t("auth.roleSeller")}</option>
                 <option value="corporate_buyer">{t("auth.roleCorporateBuyer")}</option>
+                <option value="delivery_agent">Livreur partenaire</option>
               </select>
             </div>
           )}
@@ -112,6 +148,16 @@ export default function Login() {
               placeholder={t("auth.fullName")}
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
+              className={inputClass}
+            />
+          )}
+
+          {mode === "register" && (
+            <input
+              type="text"
+              placeholder="Code de parrainage (optionnel)"
+              value={referralCode}
+              onChange={(e) => setReferralCode(e.target.value)}
               className={inputClass}
             />
           )}

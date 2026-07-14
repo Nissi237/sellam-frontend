@@ -1,20 +1,28 @@
 import { Link } from "react-router-dom";
 import type { Product } from "../types/product";
 import { formatPrice } from "../utils/format";
-import { BadgeCheck } from "lucide-react";
+import { BadgeCheck, Megaphone } from "lucide-react";
 
 export default function ProductCard({ product }: { product: Product }) {
+  const hasPromo = product.promoPrice != null && product.promoPrice < product.price;
   return (
     <Link
       to={`/product/${product.id}`}
       className="receipt-stub bg-white border border-forest-300 shadow-sm hover:shadow-md transition p-4 flex flex-col"
     >
-      <img
-        src={product.photoUrl}
-        alt={product.name}
-        className="w-full h-36 object-cover rounded mb-3"
-        loading="lazy"
-      />
+      <div className="relative">
+        <img
+          src={product.photoUrl}
+          alt={product.name}
+          className="w-full h-36 object-cover rounded mb-3"
+          loading="lazy"
+        />
+        {product.sponsored && (
+          <span className="absolute top-1 left-1 flex items-center gap-1 bg-forest-950/80 text-cream text-[10px] px-1.5 py-0.5 rounded">
+            <Megaphone size={10} /> Sponsorisé
+          </span>
+        )}
+      </div>
 
       <div className="flex items-start justify-between gap-2 mb-1">
         <h3 className="font-body font-semibold text-forest-950 leading-tight">
@@ -27,10 +35,20 @@ export default function ProductCard({ product }: { product: Product }) {
         )}
       </div>
 
-      <p className="font-mono text-lg text-forest-800 mb-2">
-        {formatPrice(product.price)}
-        <span className="text-xs text-forest-500"> / {product.unit}</span>
-      </p>
+      {hasPromo ? (
+        <p className="font-mono text-lg text-clay mb-2">
+          {formatPrice(product.promoPrice!)}
+          <span className="text-xs text-forest-500 line-through ml-1">
+            {formatPrice(product.price)}
+          </span>
+          <span className="text-xs text-forest-500"> / {product.unit}</span>
+        </p>
+      ) : (
+        <p className="font-mono text-lg text-forest-800 mb-2">
+          {formatPrice(product.price)}
+          <span className="text-xs text-forest-500"> / {product.unit}</span>
+        </p>
+      )}
 
       <div className="border-t border-dashed border-forest-300 my-2" />
 

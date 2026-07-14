@@ -1,0 +1,22 @@
+{
+  "name": "Sellam — Le marché de Douala",
+  "short_name": "Sellam",
+  "description": "Le marché de Douala, en ligne. Achetez chez des vendeurs vérifiés, ou vendez à toute la ville.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "lang": "fr",
+  "dir": "ltr",
+  "background_color": "#ece9e0",
+  "theme_color": "#2f4a3c",
+  "categories": ["shopping", "food", "business"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512 any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

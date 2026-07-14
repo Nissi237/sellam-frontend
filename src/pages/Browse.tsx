@@ -1,8 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Search } from "lucide-react";
 import ProductCard from "../components/ProductCard";
-import { mockProducts } from "../data/mockProducts";
+import { fetchProducts } from "../api/endpoints";
+import type { Product } from "../types/product";
 
 const categories = ["Tous", "Fruits & légumes", "Provisions", "Textiles"] as const;
 
@@ -10,14 +11,24 @@ export default function Browse() {
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<(typeof categories)[number]>("Tous");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetchProducts()
+      .then(setProducts)
+      .catch(() => setError("Impossible de charger les produits."))
+      .finally(() => setLoading(false));
+  }, []);
 
   const filtered = useMemo(() => {
-    return mockProducts.filter((p) => {
+    return products.filter((p) => {
       const matchesCategory = category === "Tous" || p.category === category;
       const matchesQuery = p.name.toLowerCase().includes(query.toLowerCase());
       return matchesCategory && matchesQuery;
     });
-  }, [query, category]);
+  }, [products, query, category]);
 
   return (
     <section className="max-w-6xl mx-auto px-4 py-10">
@@ -57,7 +68,11 @@ export default function Browse() {
         </div>
       </div>
 
-      {filtered.length === 0 ? (
+      {loading ? (
+        <p className="text-forest-800/70 font-body text-center py-16">Chargement…</p>
+      ) : error ? (
+        <p className="text-clay font-body text-center py-16">{error}</p>
+      ) : filtered.length === 0 ? (
         <p className="text-forest-800/70 font-body text-center py-16">
           Aucun produit trouvé. Essayez une autre recherche.
         </p>

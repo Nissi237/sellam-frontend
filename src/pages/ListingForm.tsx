@@ -1,31 +1,71 @@
-import { useState, type FormEvent } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useState, useEffect, type FormEvent } from "react";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { Plus, Trash2 } from "lucide-react";
-import { useSeller } from "../context/SellerContext";
-import type { BulkPriceTier, Product } from "../types/product";
+import { useAuth } from "../context/AuthContext";
+import {
+  fetchProduct,
+  createProduct,
+  updateProduct,
+  submitOriginClaim,
+} from "../api/endpoints";
+import { apiError } from "../api/client";
+import type { BulkPriceTier } from "../types/product";
 
-const categories: Product["category"][] = ["Fruits & légumes", "Provisions", "Textiles"];
-const units: Product["unit"][] = ["kg", "bassine", "sac", "pièce", "carton"];
+const categories = ["Fruits & légumes", "Provisions", "Textiles"];
+const units = ["kg", "bassine", "sac", "pièce", "carton"];
 
 export default function ListingForm() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { listings, addListing, updateListing } = useSeller();
+  const { isAuthenticated, user } = useAuth();
+  const isEdit = Boolean(id);
 
-  const existing = id ? listings.find((l) => l.id === id) : undefined;
-  const isEdit = Boolean(existing);
-
-  const [name, setName] = useState(existing?.name ?? "");
-  const [category, setCategory] = useState<Product["category"]>(existing?.category ?? "Fruits & légumes");
-  const [unit, setUnit] = useState<Product["unit"]>(existing?.unit ?? "kg");
-  const [price, setPrice] = useState(existing?.price?.toString() ?? "");
-  const [quantityAvailable, setQuantityAvailable] = useState(existing?.quantityAvailable?.toString() ?? "");
+  const [name, setName] = useState("");
+  const [category, setCategory] = useState("Fruits & légumes");
+  const [unit, setUnit] = useState("kg");
+  const [price, setPrice] = useState("");
+  const [quantityAvailable, setQuantityAvailable] = useState("");
   const [harvestDate, setHarvestDate] = useState("");
-  const [qualityGrade, setQualityGrade] = useState<Product["qualityGrade"] | "">(existing?.qualityGrade ?? "");
-  const [photoUrl, setPhotoUrl] = useState(existing?.photoUrl ?? "");
-  const [description, setDescription] = useState(existing?.description ?? "");
-  const [market, setMarket] = useState(existing?.market ?? "");
-  const [bulkTiers, setBulkTiers] = useState<BulkPriceTier[]>(existing?.bulkPriceTiers ?? []);
+  const [qualityGrade, setQualityGrade] = useState<"A" | "B" | "C" | "">("");
+  const [photoUrl, setPhotoUrl] = useState("");
+  const [description, setDescription] = useState("");
+  const [market, setMarket] = useState("");
+  const [bulkTiers, setBulkTiers] = useState<BulkPriceTier[]>([]);
+  const [originClaim, setOriginClaim] = useState("");
+  const [originDocUrl, setOriginDocUrl] = useState("");
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  // Prefill when editing.
+  useEffect(() => {
+    if (!id) return;
+    fetchProduct(id)
+      .then((p) => {
+        setName(p.name);
+        setCategory(p.category);
+        setUnit(p.unit);
+        setPrice(String(p.price));
+        setQuantityAvailable(String(p.quantityAvailable));
+        setHarvestDate(p.harvestDate ? p.harvestDate.slice(0, 10) : "");
+        setQualityGrade((p.qualityGrade as "A" | "B" | "C") ?? "");
+        setPhotoUrl(p.photoUrl ?? "");
+        setDescription(p.description ?? "");
+        setMarket(p.market ?? "");
+        setBulkTiers(p.bulkPriceTiers ?? []);
+      })
+      .catch(() => setError("Annonce introuvable."));
+  }, [id]);
+
+  if (!isAuthenticated || user?.role !== "seller") {
+    return (
+      <section className="max-w-md mx-auto px-4 py-16 text-center">
+        <p className="text-forest-800/70 font-body mb-4">
+          Vous devez être connecté en tant que vendeur.
+        </p>
+        <Link to="/login" className="text-forest-800 underline">Se connecter</Link>
+      </section>
+    );
+  }
 
   const addTierRow = () => setBulkTiers((prev) => [...prev, { minQuantity: 0, price: 0 }]);
   const updateTierRow = (index: number, field: keyof BulkPriceTier, value: number) => {
@@ -34,8 +74,10 @@ export default function ListingForm() {
   const removeTierRow = (index: number) =>
     setBulkTiers((prev) => prev.filter((_, i) => i !== index));
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setError("");
+    setSaving(true);
 
     const payload = {
       name,
@@ -44,22 +86,28 @@ export default function ListingForm() {
       price: Number(price),
       quantityAvailable: Number(quantityAvailable),
       qualityGrade: qualityGrade || undefined,
-      bulkPriceTiers: bulkTiers.length > 0 ? bulkTiers : undefined,
+      harvestDate: harvestDate || undefined,
+      bulkPriceTiers: bulkTiers.filter((t) => t.minQuantity > 0 && t.price > 0),
       photoUrl: photoUrl || "https://images.unsplash.com/photo-1542838132-92c53300491e?w=400",
       description,
       market,
-      sellerName: existing?.sellerName ?? "Mama Ngozi", // TODO (backend): pull from authenticated seller session
-      sellerVerified: existing?.sellerVerified ?? true,
-      sellerTrustScore: existing?.sellerTrustScore,
-      active: existing?.active ?? true,
     };
 
-    if (isEdit && id) {
-      updateListing(id, payload);
-    } else {
-      addListing(payload);
+    try {
+      const saved = isEdit && id ? await updateProduct(id, payload) : await createProduct(payload);
+      // FR-41: submit an origin claim + document (pending Admin review).
+      if (originClaim.trim() && originDocUrl.trim()) {
+        await submitOriginClaim(saved.id, {
+          claim: originClaim.trim(),
+          documentType: "document",
+          fileUrl: originDocUrl.trim(),
+        });
+      }
+      navigate("/sell");
+    } catch (err) {
+      setError(apiError(err));
+      setSaving(false);
     }
-    navigate("/sell");
   };
 
   const inputClass =
@@ -82,20 +130,12 @@ export default function ListingForm() {
         />
 
         <div className="grid grid-cols-2 gap-3">
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value as Product["category"])}
-            className={inputClass}
-          >
+          <select value={category} onChange={(e) => setCategory(e.target.value)} className={inputClass}>
             {categories.map((c) => (
               <option key={c} value={c}>{c}</option>
             ))}
           </select>
-          <select
-            value={unit}
-            onChange={(e) => setUnit(e.target.value as Product["unit"])}
-            className={inputClass}
-          >
+          <select value={unit} onChange={(e) => setUnit(e.target.value)} className={inputClass}>
             {units.map((u) => (
               <option key={u} value={u}>{u}</option>
             ))}
@@ -126,14 +166,13 @@ export default function ListingForm() {
         <div className="grid grid-cols-2 gap-3">
           <input
             type="date"
-            placeholder="Date de récolte"
             value={harvestDate}
             onChange={(e) => setHarvestDate(e.target.value)}
             className={inputClass}
           />
           <select
             value={qualityGrade}
-            onChange={(e) => setQualityGrade(e.target.value as Product["qualityGrade"] | "")}
+            onChange={(e) => setQualityGrade(e.target.value as "A" | "B" | "C" | "")}
             className={inputClass}
           >
             <option value="">Grade qualité (optionnel)</option>
@@ -159,7 +198,7 @@ export default function ListingForm() {
           className={inputClass}
         />
         <p className="text-xs text-forest-500 -mt-2">
-          Upload de fichier à venir avec le backend — pour l'instant, collez un lien d'image.
+          Upload de fichier à venir — pour l'instant, collez un lien d'image.
         </p>
 
         <textarea
@@ -170,7 +209,7 @@ export default function ListingForm() {
           rows={3}
         />
 
-        {/* Bulk price tiers, per FR-5 */}
+        {/* Bulk price tiers (FR-5) */}
         <div>
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium text-forest-800">Tarifs dégressifs (optionnel)</p>
@@ -211,9 +250,36 @@ export default function ListingForm() {
           ))}
         </div>
 
+        {/* Origin / authenticity claim (FR-41) */}
+        <div className="border border-dashed border-forest-300 rounded-md p-3">
+          <p className="text-sm font-medium text-forest-800 mb-2">
+            Allégation d'origine (optionnel)
+          </p>
+          <input
+            type="text"
+            placeholder='ex : "Fait au Cameroun"'
+            value={originClaim}
+            onChange={(e) => setOriginClaim(e.target.value)}
+            className={`${inputClass} mb-2`}
+          />
+          <input
+            type="url"
+            placeholder="Lien du document justificatif (facture, certificat…)"
+            value={originDocUrl}
+            onChange={(e) => setOriginDocUrl(e.target.value)}
+            className={inputClass}
+          />
+          <p className="text-[11px] text-forest-500 mt-1">
+            L'allégation ne s'affiche qu'après vérification du document par un administrateur.
+          </p>
+        </div>
+
+        {error && <p className="text-clay text-sm">{error}</p>}
+
         <button
           type="submit"
-          className="bg-forest-800 text-cream py-3 rounded-md font-medium hover:bg-forest-950 transition mt-2"
+          disabled={saving}
+          className="bg-forest-800 text-cream py-3 rounded-md font-medium hover:bg-forest-950 transition mt-2 disabled:opacity-60"
         >
           {isEdit ? "Enregistrer les modifications" : "Publier l'annonce"}
         </button>

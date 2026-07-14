@@ -1,20 +1,35 @@
-import type { Product } from "./product";
+export type OrderStatus =
+  | "placed"
+  | "confirmed"
+  | "out_for_delivery"
+  | "delivered"
+  | "cancelled";
 
-export interface OrderItem {
-  product: Product;
+export interface OrderItemView {
+  id?: string;
+  productId: string | null;
+  productName: string;
+  unit?: string | null;
   quantity: number;
   unitPrice: number;
 }
 
 export interface Order {
   id: string;
-  items: OrderItem[];
-  deliveryMode: "pickup" | "delivery";
-  deliveryAddress?: string;
-  paymentProvider: "MTN MoMo" | "Orange Money";
-  phone: string;
+  buyerId?: string;
+  sellerId?: string;
+  sellerName?: string;
+  buyerName?: string;
+  type?: "retail" | "bulk";
+  status: OrderStatus;
   totalAmount: number;
-  status: "Confirmed"; // will expand to Out for Delivery / Delivered once tracking is built
-  estimatedWindow: string;
+  deliveryMode: "delivery" | "pickup";
+  deliveryAddress?: string | null;
+  estimatedWindow?: string;
   createdAt: string;
+  paymentProvider?: string | null;
+  paymentStatus?: string | null;
+  payerMomoNumber?: string | null;
+  channelUssd?: string | null; // Monetbil USSD hint shown while awaiting approval
+  items: OrderItemView[];
 }
