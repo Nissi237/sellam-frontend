@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft, Check, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -13,14 +14,14 @@ import {
 import { apiError } from "../api/client";
 import { formatPrice } from "../utils/format";
 
-const freqLabels: Record<string, string> = {
-  one_time: "Ponctuel",
-  daily: "Quotidien",
-  weekly: "Hebdomadaire",
-  monthly: "Mensuel",
+const categoryKeys: Record<string, string> = {
+  "Fruits & légumes": "produce",
+  "Provisions": "groceries",
+  "Textiles": "textiles",
 };
 
 export default function RfqDetail() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -49,12 +50,12 @@ export default function RfqDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  if (loading) return <p className="text-center py-16 text-forest-800/70">Chargement…</p>;
+  if (loading) return <p className="text-center py-16 text-forest-800/70">{t("common.loading")}</p>;
   if (!rfq)
     return (
       <section className="max-w-md mx-auto px-4 py-16 text-center">
-        <p className="text-forest-800/70 mb-4">Demande introuvable.</p>
-        <Link to="/rfqs" className="text-forest-800 underline">Retour aux devis</Link>
+        <p className="text-forest-800/70 mb-4">{t("rfq.notFound")}</p>
+        <Link to="/rfqs" className="text-forest-800 underline">{t("rfq.backToRfqs")}</Link>
       </section>
     );
 
@@ -68,7 +69,7 @@ export default function RfqDetail() {
     e.preventDefault();
     setError("");
     if (!unitPrice || Number(unitPrice) < 0) {
-      setError("Prix unitaire requis.");
+      setError(t("rfq.unitPriceRequired"));
       return;
     }
     try {
@@ -102,15 +103,15 @@ export default function RfqDetail() {
   return (
     <section className="max-w-2xl mx-auto px-4 py-8">
       <Link to="/rfqs" className="inline-flex items-center gap-1 text-sm text-forest-800 hover:text-forest-950 mb-6">
-        <ArrowLeft size={16} /> Retour aux devis
+        <ArrowLeft size={16} /> {t("rfq.backToRfqs")}
       </Link>
 
       <div className="receipt-stub bg-white border border-forest-300 p-5 mb-6">
         <h1 className="font-display text-xl text-forest-950 mb-1">
-          {rfq.quantity} {rfq.unit} · {rfq.productCategory}
+          {rfq.quantity} {t(`unit.${rfq.unit}`, rfq.unit)} · {t(`category.${categoryKeys[rfq.productCategory] ?? ""}`, rfq.productCategory)}
         </h1>
         <p className="text-sm text-forest-500 mb-3">
-          {freqLabels[rfq.frequency]} · {rfq.businessName ?? rfq.buyerName}
+          {t(`freq.${rfq.frequency}`, rfq.frequency)} · {rfq.businessName ?? rfq.buyerName}
           {rfq.deliveryLocation ? ` · ${rfq.deliveryLocation}` : ""}
         </p>
         {rfq.notes && <p className="text-sm text-forest-800/80 font-body">{rfq.notes}</p>}
@@ -118,31 +119,31 @@ export default function RfqDetail() {
 
       {canQuote && (
         <form onSubmit={doSubmit} className="receipt-stub bg-white border border-forest-300 p-5 mb-6">
-          <p className="font-body font-semibold text-forest-800 mb-3">Proposer un devis</p>
+          <p className="font-body font-semibold text-forest-800 mb-3">{t("rfq.proposeQuote")}</p>
           <div className="grid sm:grid-cols-2 gap-3 mb-3">
-            <input type="number" min={0} placeholder={`Prix / ${rfq.unit}`} value={unitPrice}
+            <input type="number" min={0} placeholder={t("rfq.pricePerUnit", { unit: t(`unit.${rfq.unit}`, rfq.unit) })} value={unitPrice}
               onChange={(e) => setUnitPrice(e.target.value)} className={inputClass} />
-            <input type="text" placeholder="Conditions de livraison" value={deliveryTerms}
+            <input type="text" placeholder={t("rfq.deliveryTermsPlaceholder")} value={deliveryTerms}
               onChange={(e) => setDeliveryTerms(e.target.value)} className={inputClass} />
           </div>
           {unitPrice && (
             <p className="text-xs text-forest-500 mb-2">
-              Total pour {rfq.quantity} {rfq.unit} : {formatPrice(Number(unitPrice) * rfq.quantity)}
+              {t("rfq.totalFor", { qty: rfq.quantity, unit: t(`unit.${rfq.unit}`, rfq.unit), amount: formatPrice(Number(unitPrice) * rfq.quantity) })}
             </p>
           )}
           {error && <p className="text-clay text-sm mb-2">{error}</p>}
           <button type="submit" className="bg-forest-800 text-cream px-4 py-2 rounded-md text-sm font-medium hover:bg-forest-950 transition">
-            Envoyer le devis
+            {t("rfq.sendQuote")}
           </button>
         </form>
       )}
 
       <h2 className="font-body font-semibold text-forest-800 mb-3">
-        Devis reçus ({quotes.length})
+        {t("rfq.quotesReceived", { count: quotes.length })}
       </h2>
       {error && !canQuote && <p className="text-clay text-sm mb-2">{error}</p>}
       {quotes.length === 0 ? (
-        <p className="text-forest-800/70 font-body py-4">Aucun devis pour le moment.</p>
+        <p className="text-forest-800/70 font-body py-4">{t("rfq.noQuotes")}</p>
       ) : (
         <div className="flex flex-col gap-3">
           {quotes.map((q) => (
@@ -151,7 +152,7 @@ export default function RfqDetail() {
                 <div>
                   <p className="font-body font-semibold text-forest-950">{q.sellerName}</p>
                   <p className="font-mono text-forest-800">
-                    {formatPrice(q.unitPrice)} / {rfq.unit} · total {formatPrice(total(q))}
+                    {t("rfq.quoteTotal", { price: formatPrice(q.unitPrice), unit: t(`unit.${rfq.unit}`, rfq.unit), amount: formatPrice(total(q)) })}
                   </p>
                   {q.deliveryTerms && <p className="text-xs text-forest-500">{q.deliveryTerms}</p>}
                 </div>
@@ -160,7 +161,7 @@ export default function RfqDetail() {
                   : q.status === "rejected" ? "bg-clay/20 text-clay"
                   : "bg-forest-300/30 text-forest-800"
                 }`}>
-                  {q.status === "accepted" ? "Accepté" : q.status === "rejected" ? "Rejeté" : "En attente"}
+                  {q.status === "accepted" ? t("rfq.quoteStatus.accepted") : q.status === "rejected" ? t("rfq.quoteStatus.rejected") : t("rfq.quoteStatus.pending")}
                 </span>
               </div>
 
@@ -168,11 +169,11 @@ export default function RfqDetail() {
                 <div className="flex gap-2 mt-3">
                   <button onClick={() => doAccept(q)}
                     className="flex items-center gap-1 bg-forest-800 text-cream px-3 py-1.5 rounded-md text-sm hover:bg-forest-950 transition">
-                    <Check size={14} /> Accepter
+                    <Check size={14} /> {t("rfq.accept")}
                   </button>
                   <button onClick={() => doReject(q)}
                     className="flex items-center gap-1 border border-clay text-clay px-3 py-1.5 rounded-md text-sm hover:bg-clay/10 transition">
-                    <X size={14} /> Rejeter
+                    <X size={14} /> {t("rfq.reject")}
                   </button>
                 </div>
               )}

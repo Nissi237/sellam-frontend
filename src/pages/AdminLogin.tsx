@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { ShieldAlert, Lock } from "lucide-react";
 import { adminLogin } from "../api/endpoints";
 import { apiError } from "../api/client";
@@ -8,6 +9,7 @@ import { useAuth } from "../context/AuthContext";
 // Separate admin entry point — talks to the backend's admin auth module
 // (/admin/auth/login), distinct from the client login.
 export default function AdminLogin() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { login: setAuth } = useAuth();
   const [email, setEmail] = useState("");
@@ -19,7 +21,7 @@ export default function AdminLogin() {
     e.preventDefault();
     setError("");
     if (!email.trim() || !password.trim()) {
-      setError("Email et mot de passe requis.");
+      setError(t("adminLogin.required"));
       return;
     }
     setLoading(true);
@@ -28,7 +30,7 @@ export default function AdminLogin() {
       setAuth(result.token, result.user);
       navigate("/admin");
     } catch (err) {
-      setError(apiError(err, "Identifiants administrateur invalides."));
+      setError(apiError(err, t("adminLogin.invalid")));
     } finally {
       setLoading(false);
     }
@@ -41,16 +43,16 @@ export default function AdminLogin() {
     <section className="max-w-md mx-auto px-4 py-12">
       <div className="receipt-stub bg-white border border-forest-300 shadow-sm p-6">
         <h1 className="font-display text-2xl text-forest-950 mb-1 flex items-center gap-2">
-          <ShieldAlert size={22} /> Portail administrateur
+          <ShieldAlert size={22} /> {t("adminLogin.title")}
         </h1>
         <p className="text-xs text-forest-500 mb-5 flex items-center gap-1">
-          <Lock size={12} /> Accès réservé — connexion séparée des clients.
+          <Lock size={12} /> {t("adminLogin.subtitle")}
         </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <input
             type="email"
-            placeholder="Email administrateur"
+            placeholder={t("adminLogin.email")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className={inputClass}
@@ -58,7 +60,7 @@ export default function AdminLogin() {
           />
           <input
             type="password"
-            placeholder="Mot de passe"
+            placeholder={t("adminLogin.password")}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className={inputClass}
@@ -72,12 +74,12 @@ export default function AdminLogin() {
             disabled={loading}
             className="bg-forest-800 text-cream py-2.5 rounded-md font-medium hover:bg-forest-950 transition disabled:opacity-60"
           >
-            {loading ? "Connexion…" : "Se connecter"}
+            {loading ? t("adminLogin.loading") : t("adminLogin.submit")}
           </button>
         </form>
 
         <Link to="/login" className="block text-center text-sm text-forest-800 underline mt-4">
-          Vous êtes un client ? Connexion client
+          {t("adminLogin.clientLink")}
         </Link>
       </div>
     </section>

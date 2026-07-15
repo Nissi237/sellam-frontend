@@ -137,7 +137,7 @@ export default function Login() {
                 <option value="individual_buyer">{t("auth.roleIndividualBuyer")}</option>
                 <option value="seller">{t("auth.roleSeller")}</option>
                 <option value="corporate_buyer">{t("auth.roleCorporateBuyer")}</option>
-                <option value="delivery_agent">Livreur partenaire</option>
+                <option value="delivery_agent">{t("auth.roleDeliveryAgent")}</option>
               </select>
             </div>
           )}
@@ -155,7 +155,7 @@ export default function Login() {
           {mode === "register" && (
             <input
               type="text"
-              placeholder="Code de parrainage (optionnel)"
+              placeholder={t("auth.referralCode")}
               value={referralCode}
               onChange={(e) => setReferralCode(e.target.value)}
               className={inputClass}

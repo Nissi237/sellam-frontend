@@ -25,26 +25,26 @@ export default function Layout({ children }: { children: ReactNode }) {
             <Link to="/sell" className="hover:text-forest-300 transition">{t("nav.sell")}</Link>
             {isAuthenticated && (user?.role === "seller" || user?.role === "corporate_buyer") && (
               <>
-                <Link to="/rfqs" className="hover:text-forest-300 transition">Devis</Link>
-                <Link to="/invoices" className="hover:text-forest-300 transition">Factures</Link>
+                <Link to="/rfqs" className="hover:text-forest-300 transition">{t("nav.rfqs")}</Link>
+                <Link to="/invoices" className="hover:text-forest-300 transition">{t("nav.invoices")}</Link>
               </>
             )}
             {isAuthenticated && user?.role === "seller" && (
-              <Link to="/financing" className="hover:text-forest-300 transition">Financement</Link>
+              <Link to="/financing" className="hover:text-forest-300 transition">{t("nav.financing")}</Link>
             )}
             {isAuthenticated && user?.role === "delivery_agent" && (
-              <Link to="/deliver" className="hover:text-forest-300 transition">Livraisons</Link>
+              <Link to="/deliver" className="hover:text-forest-300 transition">{t("nav.deliver")}</Link>
             )}
             {isAuthenticated && user?.role === "admin" && (
-              <Link to="/admin" className="hover:text-forest-300 transition">Admin</Link>
+              <Link to="/admin" className="hover:text-forest-300 transition">{t("nav.admin")}</Link>
             )}
             {isAuthenticated && (
-              <Link to="/messages" className="hover:text-forest-300 transition">Messages</Link>
+              <Link to="/messages" className="hover:text-forest-300 transition">{t("nav.messages")}</Link>
             )}
             {isAuthenticated && <NotificationsBell />}
             {isAuthenticated ? (
               <Link to="/account" className="flex items-center gap-1 hover:text-forest-300 transition">
-                <UserIcon size={16} /> {user?.fullName?.split(" ")[0] ?? "Compte"}
+                <UserIcon size={16} /> {user?.fullName?.split(" ")[0] ?? t("nav.account")}
               </Link>
             ) : (
               <Link to="/login" className="hover:text-forest-300 transition">{t("nav.login")}</Link>
@@ -63,7 +63,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       </header>
       <main className="flex-1">{children}</main>
       <footer className="bg-forest-950 text-cream/60 text-sm text-center py-6 font-mono">
-        Sellam © 2026 — Douala, Cameroun
+        {t("footer")}
       </footer>
     </div>
   );

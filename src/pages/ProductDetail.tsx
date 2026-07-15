@@ -38,7 +38,7 @@ export default function ProductDetail() {
   if (loading) {
     return (
       <section className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <p className="text-forest-800/70 font-body">Chargement…</p>
+        <p className="text-forest-800/70 font-body">{t("common.loading")}</p>
       </section>
     );
   }
@@ -46,7 +46,7 @@ export default function ProductDetail() {
   if (!product) {
     return (
       <section className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <p className="text-forest-800/70 font-body mb-4">Produit introuvable.</p>
+        <p className="text-forest-800/70 font-body mb-4">{t("product.notFound")}</p>
         <Link to="/browse" className="text-forest-800 underline">
           {t("nav.browse")}
         </Link>
@@ -75,17 +75,17 @@ export default function ProductDetail() {
   const isProductSeller = user?.id === product.sellerId;
   const refreshReviews = () => id && fetchReviews({ productId: id }).then(setReviews).catch(() => {});
   const respond = async (reviewId: string) => {
-    const text = prompt("Votre réponse publique :");
+    const text = prompt(t("product.responsePrompt"));
     if (text?.trim()) {
       await respondToReview(reviewId, text.trim());
       refreshReviews();
     }
   };
   const dispute = async (reviewId: string) => {
-    const reason = prompt("Motif du signalement à l'administrateur :");
+    const reason = prompt(t("product.disputePrompt"));
     if (reason?.trim()) {
       await disputeReview(reviewId, reason.trim());
-      alert("Signalement envoyé à l'administrateur.");
+      alert(t("product.disputeSent"));
     }
   };
 
@@ -145,17 +145,21 @@ export default function ProductDetail() {
             )}
             <span className="text-sm text-forest-500"> / {product.unit}</span>
           </p>
-          {hasPromo && <p className="text-xs text-clay mb-1">Promotion en cours 🎉</p>}
+          {hasPromo && <p className="text-xs text-clay mb-1">{t("product.promoActive")}</p>}
           {tierPrice != null && activePrice === tierPrice && (
-            <p className="text-xs text-leaf mb-3">Prix de gros appliqué ✓</p>
+            <p className="text-xs text-leaf mb-3">{t("product.bulkApplied")}</p>
           )}
 
           {hasTiers && (
             <div className="border border-dashed border-forest-300 rounded-md p-3 mb-4 text-sm">
-              <p className="font-medium text-forest-800 mb-1">Tarifs dégressifs :</p>
+              <p className="font-medium text-forest-800 mb-1">{t("product.bulkTiers")}</p>
               {tiers.map((tier) => (
                 <p key={tier.minQuantity} className="text-forest-800/80">
-                  À partir de {tier.minQuantity} {product.unit}s — {formatPrice(tier.price)} / {product.unit}
+                  {t("product.tierLine", {
+                    min: tier.minQuantity,
+                    unit: product.unit,
+                    price: formatPrice(tier.price),
+                  })}
                 </p>
               ))}
             </div>
@@ -170,8 +174,7 @@ export default function ProductDetail() {
               <div>
                 <p className="text-sm font-medium text-forest-950">{product.originClaim}</p>
                 <p className="text-[11px] text-forest-500">
-                  Documentation vérifiée par Sellam — reflète les documents examinés, non une
-                  certification indépendante.
+                  {t("product.originVerifiedNote")}
                 </p>
               </div>
             </div>
@@ -182,7 +185,7 @@ export default function ProductDetail() {
               <button
                 onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                 className="p-2 hover:bg-forest-300/20"
-                aria-label="Diminuer la quantité"
+                aria-label={t("cart.decrease")}
               >
                 <Minus size={16} />
               </button>
@@ -190,13 +193,13 @@ export default function ProductDetail() {
               <button
                 onClick={() => setQuantity((q) => Math.min(product.quantityAvailable, q + 1))}
                 className="p-2 hover:bg-forest-300/20"
-                aria-label="Augmenter la quantité"
+                aria-label={t("cart.increase")}
               >
                 <Plus size={16} />
               </button>
             </div>
             <span className="text-xs text-forest-500">
-              {product.quantityAvailable} {product.unit}s disponibles
+              {t("product.available", { qty: product.quantityAvailable, unit: product.unit })}
             </span>
           </div>
 
@@ -206,16 +209,16 @@ export default function ProductDetail() {
             className="w-full bg-forest-800 text-cream py-3 rounded-md font-medium hover:bg-forest-950 transition mb-2 disabled:opacity-50"
           >
             {product.quantityAvailable < 1
-              ? "Rupture de stock"
+              ? t("product.outOfStock")
               : justAdded
-              ? "Ajouté ✓"
-              : `Ajouter au panier — ${formatPrice(activePrice * quantity)}`}
+              ? t("product.added")
+              : t("product.addToCart", { price: formatPrice(activePrice * quantity) })}
           </button>
           <button
             onClick={() => navigate("/cart")}
             className="w-full text-forest-800 text-sm underline mb-3"
           >
-            Voir le panier
+            {t("product.viewCart")}
           </button>
 
           <div className="border-t border-forest-300 pt-4 mt-4 flex items-center justify-between">
@@ -228,7 +231,7 @@ export default function ProductDetail() {
               </p>
               {product.sellerTrustScore ? (
                 <p className="text-xs text-forest-500">
-                  Score de confiance : {product.sellerTrustScore.toFixed(1)}/5
+                  {t("product.trustScore", { score: product.sellerTrustScore.toFixed(1) })}
                 </p>
               ) : null}
             </div>
@@ -242,7 +245,7 @@ export default function ProductDetail() {
               }
               className="flex items-center gap-1 text-sm text-forest-800 border border-forest-300 rounded-full px-3 py-1.5 hover:bg-forest-300/20"
             >
-              <MessageCircle size={14} /> Contacter
+              <MessageCircle size={14} /> {t("product.contact")}
             </button>
           </div>
         </div>
@@ -252,7 +255,7 @@ export default function ProductDetail() {
       {reviews.length > 0 && (
         <div className="mt-10">
           <h2 className="font-display text-xl text-forest-950 mb-4">
-            Avis vérifiés ({reviews.length})
+            {t("product.reviewsTitle", { count: reviews.length })}
           </h2>
           <div className="flex flex-col gap-3">
             {reviews.map((r) => (
@@ -274,20 +277,20 @@ export default function ProductDetail() {
                 {r.evidence && r.evidence.length > 0 && (
                   <div className="flex gap-2 mt-2">
                     {r.evidence.map((url) => (
-                      <img key={url} src={url} alt="preuve" className="w-14 h-14 object-cover rounded border border-forest-300" />
+                      <img key={url} src={url} alt={t("product.evidenceAlt")} className="w-14 h-14 object-cover rounded border border-forest-300" />
                     ))}
                   </div>
                 )}
                 {r.sellerResponse && (
                   <div className="mt-2 pl-3 border-l-2 border-forest-300">
-                    <p className="text-[11px] text-forest-500">Réponse du vendeur</p>
+                    <p className="text-[11px] text-forest-500">{t("product.sellerResponse")}</p>
                     <p className="text-sm text-forest-800/80">{r.sellerResponse}</p>
                   </div>
                 )}
                 {isProductSeller && (
                   <div className="flex gap-3 mt-2">
-                    <button onClick={() => respond(r.id)} className="text-xs text-forest-800 underline">Répondre</button>
-                    <button onClick={() => dispute(r.id)} className="text-xs text-clay underline">Signaler</button>
+                    <button onClick={() => respond(r.id)} className="text-xs text-forest-800 underline">{t("product.respond")}</button>
+                    <button onClick={() => dispute(r.id)} className="text-xs text-clay underline">{t("product.report")}</button>
                   </div>
                 )}
               </div>

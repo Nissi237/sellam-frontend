@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Trash2, Star, Plus } from "lucide-react";
 import {
   fetchMomoAccounts,
@@ -23,6 +24,7 @@ export default function MomoAccounts({
   onChange?: (accounts: MomoAccount[]) => void;
   compact?: boolean;
 }) {
+  const { t } = useTranslation();
   const [accounts, setAccounts] = useState<MomoAccount[]>([]);
   const [provider, setProvider] = useState<(typeof PROVIDERS)[number]>("MTN MoMo");
   const [number, setNumber] = useState("");
@@ -47,7 +49,7 @@ export default function MomoAccounts({
     e.preventDefault();
     setError("");
     if (!number.trim()) {
-      setError("Numéro requis");
+      setError(t("momo.numberRequired"));
       return;
     }
     setBusy(true);
@@ -94,7 +96,7 @@ export default function MomoAccounts({
               </span>
               {a.isDefault ? (
                 <span className="text-[11px] text-leaf flex items-center gap-1">
-                  <Star size={12} className="fill-leaf text-leaf" /> défaut
+                  <Star size={12} className="fill-leaf text-leaf" /> {t("momo.default")}
                 </span>
               ) : (
                 <button
@@ -102,14 +104,14 @@ export default function MomoAccounts({
                   onClick={() => setDefaultMomoAccount(a.id).then(load)}
                   className="text-[11px] text-forest-800 underline"
                 >
-                  définir par défaut
+                  {t("momo.setDefault")}
                 </button>
               )}
               <button
                 type="button"
                 onClick={() => deleteMomoAccount(a.id).then(load)}
                 className="text-clay hover:text-clay/70"
-                aria-label="Supprimer"
+                aria-label={t("common.delete")}
               >
                 <Trash2 size={16} />
               </button>
@@ -137,7 +139,7 @@ export default function MomoAccounts({
         </div>
         <input
           type="tel"
-          placeholder="Numéro Mobile Money (+237…)"
+          placeholder={t("momo.numberPlaceholder")}
           value={number}
           onChange={(e) => setNumber(e.target.value)}
           className={inputClass}
@@ -145,7 +147,7 @@ export default function MomoAccounts({
         {!compact && (
           <input
             type="text"
-            placeholder="Nom du titulaire (optionnel)"
+            placeholder={t("momo.namePlaceholder")}
             value={name}
             onChange={(e) => setName(e.target.value)}
             className={inputClass}
@@ -157,7 +159,7 @@ export default function MomoAccounts({
           disabled={busy}
           className="flex items-center justify-center gap-1 bg-forest-300/40 text-forest-800 py-2 rounded-md text-sm font-medium hover:bg-forest-300/60 transition disabled:opacity-60"
         >
-          <Plus size={16} /> Ajouter ce compte
+          <Plus size={16} /> {t("momo.addAccount")}
         </button>
       </form>
     </div>

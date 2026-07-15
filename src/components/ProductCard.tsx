@@ -1,9 +1,11 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import type { Product } from "../types/product";
 import { formatPrice } from "../utils/format";
 import { BadgeCheck, Megaphone } from "lucide-react";
 
 export default function ProductCard({ product }: { product: Product }) {
+  const { t } = useTranslation();
   const hasPromo = product.promoPrice != null && product.promoPrice < product.price;
   return (
     <Link
@@ -19,7 +21,7 @@ export default function ProductCard({ product }: { product: Product }) {
         />
         {product.sponsored && (
           <span className="absolute top-1 left-1 flex items-center gap-1 bg-forest-950/80 text-cream text-[10px] px-1.5 py-0.5 rounded">
-            <Megaphone size={10} /> Sponsorisé
+            <Megaphone size={10} /> {t("common.sponsored")}
           </span>
         )}
       </div>

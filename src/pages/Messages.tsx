@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useSearchParams, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Send, ArrowLeft, MessageCircle } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -12,6 +13,7 @@ import {
 import { getSocket } from "../lib/socket";
 
 export default function Messages() {
+  const { t } = useTranslation();
   const { user, isAuthenticated } = useAuth();
   const [params, setParams] = useSearchParams();
 
@@ -32,7 +34,7 @@ export default function Messages() {
     loadConversations();
     const withId = params.get("with");
     const name = params.get("name");
-    if (withId) setSelected({ id: withId, name: name ?? "Vendeur" });
+    if (withId) setSelected({ id: withId, name: name ?? t("messages.defaultSeller") });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated]);
 
@@ -65,8 +67,8 @@ export default function Messages() {
   if (!isAuthenticated) {
     return (
       <section className="max-w-md mx-auto px-4 py-16 text-center">
-        <p className="text-forest-800/70 font-body mb-4">Connectez-vous pour accéder à la messagerie.</p>
-        <Link to="/login" className="text-forest-800 underline">Se connecter</Link>
+        <p className="text-forest-800/70 font-body mb-4">{t("messages.loginRequired")}</p>
+        <Link to="/login" className="text-forest-800 underline">{t("seller.login")}</Link>
       </section>
     );
   }
@@ -95,14 +97,14 @@ export default function Messages() {
           }}
           className="inline-flex items-center gap-1 text-sm text-forest-800 hover:text-forest-950 mb-3"
         >
-          <ArrowLeft size={16} /> Conversations
+          <ArrowLeft size={16} /> {t("messages.conversations")}
         </button>
         <h1 className="font-display text-lg text-forest-950 mb-3">{selected.name}</h1>
 
         <div className="flex-1 overflow-y-auto flex flex-col gap-2 border border-forest-300 rounded-md p-3 bg-white">
           {messages.length === 0 ? (
             <p className="text-forest-500 text-sm text-center my-auto">
-              Démarrez la conversation.
+              {t("messages.start")}
             </p>
           ) : (
             messages.map((m) => {
@@ -125,7 +127,7 @@ export default function Messages() {
           <input
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Votre message…"
+            placeholder={t("messages.placeholder")}
             className="flex-1 px-3 py-2 border border-forest-300 rounded-md font-body text-forest-950 focus:outline-none focus:ring-2 focus:ring-forest-800"
           />
           <button type="submit" className="bg-forest-800 text-cream px-4 rounded-md hover:bg-forest-950 transition">
@@ -140,10 +142,10 @@ export default function Messages() {
   return (
     <section className="max-w-2xl mx-auto px-4 py-8">
       <h1 className="font-display text-2xl text-forest-950 mb-6 flex items-center gap-2">
-        <MessageCircle size={22} /> Messages
+        <MessageCircle size={22} /> {t("messages.title")}
       </h1>
       {conversations.length === 0 ? (
-        <p className="text-forest-800/70 font-body py-8 text-center">Aucune conversation.</p>
+        <p className="text-forest-800/70 font-body py-8 text-center">{t("messages.none")}</p>
       ) : (
         <div className="flex flex-col gap-2">
           {conversations.map((c) => (

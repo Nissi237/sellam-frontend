@@ -1,27 +1,21 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { FileText, Plus } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { listRfqs, createRfq, type Rfq } from "../api/endpoints";
 import { apiError } from "../api/client";
 
-const categories = ["Fruits & légumes", "Provisions", "Textiles"];
+const categories = [
+  { value: "Fruits & légumes", key: "produce" },
+  { value: "Provisions", key: "groceries" },
+  { value: "Textiles", key: "textiles" },
+];
 const units = ["kg", "bassine", "sac", "pièce", "carton"];
-const freqLabels: Record<string, string> = {
-  one_time: "Ponctuel",
-  daily: "Quotidien",
-  weekly: "Hebdomadaire",
-  monthly: "Mensuel",
-};
-const statusLabels: Record<string, string> = {
-  open: "Ouvert",
-  quoted: "Devis reçus",
-  accepted: "Accepté",
-  closed: "Clôturé",
-  cancelled: "Annulé",
-};
+const freqKeys = ["one_time", "daily", "weekly", "monthly"];
 
 export default function Rfqs() {
+  const { t } = useTranslation();
   const { user, isAuthenticated } = useAuth();
   const isSeller = user?.role === "seller";
   const isCorporate = user?.role === "corporate_buyer";
@@ -30,7 +24,7 @@ export default function Rfqs() {
   const [loading, setLoading] = useState(true);
 
   // create form
-  const [category, setCategory] = useState(categories[0]);
+  const [category, setCategory] = useState(categories[0].value);
   const [quantity, setQuantity] = useState("");
   const [unit, setUnit] = useState(units[0]);
   const [frequency, setFrequency] = useState("one_time");
@@ -54,8 +48,8 @@ export default function Rfqs() {
   if (!isAuthenticated) {
     return (
       <section className="max-w-md mx-auto px-4 py-16 text-center">
-        <p className="text-forest-800/70 font-body mb-4">Connectez-vous pour accéder aux devis B2B.</p>
-        <Link to="/login" className="text-forest-800 underline">Se connecter</Link>
+        <p className="text-forest-800/70 font-body mb-4">{t("rfq.loginRequired")}</p>
+        <Link to="/login" className="text-forest-800 underline">{t("seller.login")}</Link>
       </section>
     );
   }
@@ -63,7 +57,7 @@ export default function Rfqs() {
     return (
       <section className="max-w-md mx-auto px-4 py-16 text-center">
         <p className="text-forest-800/70 font-body">
-          Les demandes de devis (RFQ) sont réservées aux acheteurs professionnels et aux vendeurs.
+          {t("rfq.restrictedRole")}
         </p>
       </section>
     );
@@ -73,7 +67,7 @@ export default function Rfqs() {
     e.preventDefault();
     setError("");
     if (!quantity || Number(quantity) <= 0) {
-      setError("Quantité requise.");
+      setError(t("rfq.quantityRequired"));
       return;
     }
     setSaving(true);
@@ -103,42 +97,42 @@ export default function Rfqs() {
   return (
     <section className="max-w-3xl mx-auto px-4 py-8">
       <h1 className="font-display text-2xl text-forest-950 mb-6 flex items-center gap-2">
-        <FileText size={22} /> {isSeller ? "Demandes de devis ouvertes" : "Mes demandes de devis"}
+        <FileText size={22} /> {isSeller ? t("rfq.openTitle") : t("rfq.myTitle")}
       </h1>
 
       {isCorporate && (
         <form onSubmit={submit} className="receipt-stub bg-white border border-forest-300 p-5 mb-8">
-          <p className="font-body font-semibold text-forest-800 mb-3">Nouvelle demande (RFQ)</p>
+          <p className="font-body font-semibold text-forest-800 mb-3">{t("rfq.newTitle")}</p>
           <div className="grid sm:grid-cols-2 gap-3 mb-3">
             <select value={category} onChange={(e) => setCategory(e.target.value)} className={inputClass}>
-              {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+              {categories.map((c) => <option key={c.value} value={c.value}>{t(`category.${c.key}`)}</option>)}
             </select>
             <select value={frequency} onChange={(e) => setFrequency(e.target.value)} className={inputClass}>
-              {Object.entries(freqLabels).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+              {freqKeys.map((f) => <option key={f} value={f}>{t(`freq.${f}`)}</option>)}
             </select>
-            <input type="number" min={1} placeholder="Quantité" value={quantity}
+            <input type="number" min={1} placeholder={t("rfq.quantityPlaceholder")} value={quantity}
               onChange={(e) => setQuantity(e.target.value)} className={inputClass} />
             <select value={unit} onChange={(e) => setUnit(e.target.value)} className={inputClass}>
-              {units.map((u) => <option key={u} value={u}>{u}</option>)}
+              {units.map((u) => <option key={u} value={u}>{t(`unit.${u}`)}</option>)}
             </select>
           </div>
-          <input type="text" placeholder="Lieu de livraison" value={deliveryLocation}
+          <input type="text" placeholder={t("rfq.locationPlaceholder")} value={deliveryLocation}
             onChange={(e) => setDeliveryLocation(e.target.value)} className={`${inputClass} mb-3`} />
-          <textarea placeholder="Notes (détails du produit, fréquence…)" value={notes}
+          <textarea placeholder={t("rfq.notesPlaceholder")} value={notes}
             onChange={(e) => setNotes(e.target.value)} className={`${inputClass} mb-3`} rows={2} />
           {error && <p className="text-clay text-sm mb-2">{error}</p>}
           <button type="submit" disabled={saving}
             className="flex items-center gap-1 bg-forest-800 text-cream px-4 py-2 rounded-md text-sm font-medium hover:bg-forest-950 transition disabled:opacity-60">
-            <Plus size={16} /> Publier la demande
+            <Plus size={16} /> {t("rfq.publish")}
           </button>
         </form>
       )}
 
       {loading ? (
-        <p className="text-forest-800/70 font-body py-8 text-center">Chargement…</p>
+        <p className="text-forest-800/70 font-body py-8 text-center">{t("common.loading")}</p>
       ) : rfqs.length === 0 ? (
         <p className="text-forest-800/70 font-body py-8 text-center">
-          {isSeller ? "Aucune demande ouverte pour le moment." : "Aucune demande publiée."}
+          {isSeller ? t("rfq.noneOpen") : t("rfq.noneMine")}
         </p>
       ) : (
         <div className="flex flex-col gap-3">
@@ -147,16 +141,16 @@ export default function Rfqs() {
               className="receipt-stub bg-white border border-forest-300 p-4 flex items-center justify-between hover:shadow-md transition">
               <div>
                 <p className="font-body font-semibold text-forest-950">
-                  {r.quantity} {r.unit} · {r.productCategory}
+                  {r.quantity} {t(`unit.${r.unit}`, r.unit)} · {t(`category.${categories.find((c) => c.value === r.productCategory)?.key ?? ""}`, r.productCategory)}
                 </p>
                 <p className="text-xs text-forest-500">
-                  {freqLabels[r.frequency]}
+                  {t(`freq.${r.frequency}`, r.frequency)}
                   {isSeller ? ` · ${r.businessName ?? r.buyerName}` : ""}
-                  {r.quoteCount !== undefined ? ` · ${r.quoteCount} devis` : ""}
+                  {r.quoteCount !== undefined ? ` · ${t("rfq.quoteCount", { count: r.quoteCount })}` : ""}
                 </p>
               </div>
               <span className="text-xs font-mono px-2 py-1 rounded bg-forest-300/30 text-forest-800">
-                {statusLabels[r.status]}
+                {t(`rfq.status.${r.status}`, r.status)}
               </span>
             </Link>
           ))}

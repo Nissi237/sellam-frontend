@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Bike, MapPin, Navigation, Play, CheckCircle2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -12,6 +13,7 @@ import {
 import { formatPrice } from "../utils/format";
 
 export default function Deliver() {
+  const { t } = useTranslation();
   const { user, isAuthenticated } = useAuth();
   const [jobs, setJobs] = useState<DeliveryJob[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,9 +41,9 @@ export default function Deliver() {
     return (
       <section className="max-w-md mx-auto px-4 py-16 text-center">
         <p className="text-forest-800/70 font-body mb-4">
-          Cet espace est réservé aux livreurs partenaires.
+          {t("deliver.agentOnly")}
         </p>
-        <Link to="/login" className="text-forest-800 underline">Se connecter comme livreur</Link>
+        <Link to="/login" className="text-forest-800 underline">{t("deliver.loginAsAgent")}</Link>
       </section>
     );
   }
@@ -67,11 +69,11 @@ export default function Deliver() {
   const shareGps = (job: DeliveryJob) => {
     stopSharing();
     if (!navigator.geolocation) {
-      setNote("Géolocalisation indisponible — utilisez la simulation.");
+      setNote(t("deliver.geoUnavailable"));
       return;
     }
     setSharingId(job.id);
-    setNote("Partage GPS actif…");
+    setNote(t("deliver.gpsActive"));
     watchId.current = navigator.geolocation.watchPosition(
       (pos) => {
         const now = Date.now();
@@ -79,7 +81,7 @@ export default function Deliver() {
         lastSent.current = now;
         postLocation(job.id, pos.coords.latitude, pos.coords.longitude).catch(() => {});
       },
-      () => setNote("Accès GPS refusé — utilisez la simulation."),
+      () => setNote(t("deliver.gpsDenied")),
       { enableHighAccuracy: true, maximumAge: 5000 }
     );
   };
@@ -88,19 +90,19 @@ export default function Deliver() {
   const simulate = (job: DeliveryJob) => {
     stopSharing();
     setSharingId(job.id);
-    setNote("Simulation du trajet…");
+    setNote(t("deliver.simulating"));
     let step = 0;
     const steps = 10;
     simTimer.current = setInterval(async () => {
       step += 1;
-      const t = Math.min(step / steps, 1);
-      const lat = job.origin.lat + (job.destination.lat - job.origin.lat) * t;
-      const lng = job.origin.lng + (job.destination.lng - job.origin.lng) * t;
+      const frac = Math.min(step / steps, 1);
+      const lat = job.origin.lat + (job.destination.lat - job.origin.lat) * frac;
+      const lng = job.origin.lng + (job.destination.lng - job.origin.lng) * frac;
       await postLocation(job.id, lat, lng).catch(() => {});
-      if (t >= 1) {
+      if (frac >= 1) {
         if (simTimer.current) clearInterval(simTimer.current);
         simTimer.current = null;
-        setNote("Arrivé à destination — marquez la commande livrée.");
+        setNote(t("deliver.arrived"));
       }
     }, 1500);
   };
@@ -108,25 +110,25 @@ export default function Deliver() {
   const complete = async (id: string) => {
     stopSharing();
     await markDelivered(id);
-    setNote("Commande livrée ✓");
+    setNote(t("deliver.delivered"));
     load();
   };
 
   return (
     <section className="max-w-2xl mx-auto px-4 py-8">
       <h1 className="font-display text-2xl text-forest-950 mb-1 flex items-center gap-2">
-        <Bike size={22} /> Mes livraisons
+        <Bike size={22} /> {t("deliver.title")}
       </h1>
       <p className="text-xs text-forest-500 mb-6">
-        Acceptez une course, partagez votre position en direct, puis confirmez la livraison.
+        {t("deliver.subtitle")}
       </p>
       {note && <p className="text-sm text-forest-800 bg-forest-300/20 rounded-md px-3 py-2 mb-4">{note}</p>}
 
       {loading ? (
-        <p className="text-forest-800/70 font-body py-8 text-center">Chargement…</p>
+        <p className="text-forest-800/70 font-body py-8 text-center">{t("common.loading")}</p>
       ) : jobs.length === 0 ? (
         <p className="text-forest-800/70 font-body py-8 text-center">
-          Aucune commande à livrer pour le moment.
+          {t("deliver.noJobs")}
         </p>
       ) : (
         <div className="flex flex-col gap-3">
@@ -135,10 +137,10 @@ export default function Deliver() {
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <p className="font-body font-semibold text-forest-950 flex items-center gap-1">
-                    <MapPin size={14} /> {job.deliveryAddress ?? "Adresse non précisée"}
+                    <MapPin size={14} /> {job.deliveryAddress ?? t("deliver.addressUnknown")}
                   </p>
                   <p className="text-xs text-forest-500">
-                    De {job.sellerName} · pour {job.buyerName} · {formatPrice(job.totalAmount)}
+                    {t("deliver.fromTo", { seller: job.sellerName, buyer: job.buyerName, amount: formatPrice(job.totalAmount) })}
                   </p>
                 </div>
               </div>
@@ -148,7 +150,7 @@ export default function Deliver() {
                   onClick={() => claim(job.id)}
                   className="bg-forest-800 text-cream px-4 py-2 rounded-md text-sm font-medium hover:bg-forest-950 transition"
                 >
-                  Accepter la course
+                  {t("deliver.accept")}
                 </button>
               ) : (
                 <div className="flex flex-wrap gap-2">
@@ -160,19 +162,19 @@ export default function Deliver() {
                         : "border border-forest-300 text-forest-800 hover:bg-forest-300/20"
                     }`}
                   >
-                    <Navigation size={14} /> Partager ma position
+                    <Navigation size={14} /> {t("deliver.shareLocation")}
                   </button>
                   <button
                     onClick={() => simulate(job)}
                     className="flex items-center gap-1 border border-forest-300 text-forest-800 px-3 py-1.5 rounded-md text-sm hover:bg-forest-300/20 transition"
                   >
-                    <Play size={14} /> Simuler le trajet
+                    <Play size={14} /> {t("deliver.simulate")}
                   </button>
                   <button
                     onClick={() => complete(job.id)}
                     className="flex items-center gap-1 bg-forest-800 text-cream px-3 py-1.5 rounded-md text-sm hover:bg-forest-950 transition"
                   >
-                    <CheckCircle2 size={14} /> Marquer livré
+                    <CheckCircle2 size={14} /> {t("deliver.markDelivered")}
                   </button>
                 </div>
               )}

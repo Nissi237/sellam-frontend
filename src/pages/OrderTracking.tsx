@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Package, CheckCircle2, Truck, Star, MapPin } from "lucide-react";
 import { fetchOrder, createReview, getTracking, type TrackingState } from "../api/endpoints";
 import type { Order } from "../types/order";
@@ -8,10 +9,10 @@ import { apiError } from "../api/client";
 import { getSocket } from "../lib/socket";
 import DeliveryTrackingMap from "../components/DeliveryTrackingMap";
 
-const STEPS: { key: string; label: string; icon: typeof Package }[] = [
-  { key: "confirmed", label: "Confirmée", icon: CheckCircle2 },
-  { key: "out_for_delivery", label: "En livraison", icon: Truck },
-  { key: "delivered", label: "Livrée", icon: Package },
+const STEPS: { key: string; labelKey: string; icon: typeof Package }[] = [
+  { key: "confirmed", labelKey: "order.stepConfirmed", icon: CheckCircle2 },
+  { key: "out_for_delivery", labelKey: "order.stepOutForDelivery", icon: Truck },
+  { key: "delivered", labelKey: "order.stepDelivered", icon: Package },
 ];
 
 function stepIndex(status: string): number {
@@ -22,6 +23,7 @@ function stepIndex(status: string): number {
 }
 
 export default function OrderTracking() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
@@ -81,7 +83,7 @@ export default function OrderTracking() {
   if (loading) {
     return (
       <section className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <p className="text-forest-800/70 font-body">Chargement…</p>
+        <p className="text-forest-800/70 font-body">{t("common.loading")}</p>
       </section>
     );
   }
@@ -89,9 +91,9 @@ export default function OrderTracking() {
   if (!order) {
     return (
       <section className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <p className="text-forest-800/70 font-body mb-4">Commande introuvable.</p>
+        <p className="text-forest-800/70 font-body mb-4">{t("order.notFound")}</p>
         <Link to="/browse" className="text-forest-800 underline">
-          Parcourir les produits
+          {t("cart.browseProducts")}
         </Link>
       </section>
     );
@@ -104,7 +106,7 @@ export default function OrderTracking() {
   const submitReview = async () => {
     setReviewError("");
     if (needsEvidence && !evidenceUrl.trim()) {
-      setReviewError("Une photo justificative est requise pour un avis négatif.");
+      setReviewError(t("order.evidenceRequired"));
       return;
     }
     try {
@@ -124,14 +126,14 @@ export default function OrderTracking() {
 
   return (
     <section className="max-w-xl mx-auto px-4 py-10">
-      <h1 className="font-display text-2xl text-forest-950 mb-1">Suivi de commande</h1>
+      <h1 className="font-display text-2xl text-forest-950 mb-1">{t("order.trackTitle")}</h1>
       <p className="text-sm text-forest-500 font-mono mb-6">
         #{order.id.slice(0, 8).toUpperCase()} · {order.sellerName}
       </p>
 
       {cancelled ? (
         <div className="receipt-stub bg-white border border-clay/40 p-6 text-center mb-6">
-          <p className="text-clay font-medium">Commande annulée · paiement remboursé</p>
+          <p className="text-clay font-medium">{t("order.cancelled")}</p>
         </div>
       ) : (
         <div className="receipt-stub bg-white border border-forest-300 shadow-sm p-6 mb-6">
@@ -158,7 +160,7 @@ export default function OrderTracking() {
                   <span
                     className={`text-xs mt-2 ${done ? "text-forest-950" : "text-forest-500"}`}
                   >
-                    {step.label}
+                    {t(step.labelKey)}
                   </span>
                 </div>
               );
@@ -168,8 +170,8 @@ export default function OrderTracking() {
           <p className="text-xs text-forest-500 mt-5 flex items-center gap-1 justify-center">
             <MapPin size={12} />
             {order.deliveryMode === "delivery"
-              ? `Livraison — ${order.estimatedWindow}`
-              : `Retrait — ${order.estimatedWindow}`}
+              ? t("order.deliveryWindow", { window: order.estimatedWindow })
+              : t("order.pickupWindow", { window: order.estimatedWindow })}
           </p>
         </div>
       )}
@@ -182,7 +184,7 @@ export default function OrderTracking() {
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm font-medium text-forest-800 flex items-center gap-1">
-                <Truck size={16} /> {tracking.agentName ?? "Livreur"} en route
+                <Truck size={16} /> {t("order.riderOnWay", { name: tracking.agentName ?? t("order.rider") })}
               </p>
               {tracking.etaMinutes != null && (
                 <span className="text-sm font-mono text-forest-950">
@@ -213,7 +215,7 @@ export default function OrderTracking() {
           ))}
         </div>
         <div className="border-t-2 border-dashed border-forest-300 pt-3 mt-3 flex justify-between">
-          <span className="font-body text-forest-800">Total</span>
+          <span className="font-body text-forest-800">{t("common.total")}</span>
           <span className="font-mono text-lg text-forest-950">
             {formatPrice(order.totalAmount)}
           </span>
@@ -223,14 +225,14 @@ export default function OrderTracking() {
       {/* Verified-purchase review (FR-18/37) — only once delivered */}
       {order.status === "delivered" && !reviewDone && (
         <div className="receipt-stub bg-white border border-forest-300 shadow-sm p-6">
-          <h2 className="font-display text-lg text-forest-950 mb-3">Laisser un avis</h2>
+          <h2 className="font-display text-lg text-forest-950 mb-3">{t("order.leaveReview")}</h2>
           <div className="flex gap-1 mb-3">
             {[1, 2, 3, 4, 5].map((n) => (
               <button
                 key={n}
                 type="button"
                 onClick={() => setRating(n)}
-                aria-label={`${n} étoiles`}
+                aria-label={t("order.starsLabel", { n })}
               >
                 <Star
                   size={24}
@@ -240,7 +242,7 @@ export default function OrderTracking() {
             ))}
           </div>
           <textarea
-            placeholder="Votre commentaire (optionnel)"
+            placeholder={t("order.commentPlaceholder")}
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             className="w-full px-3 py-2 border border-forest-300 rounded-md font-body text-forest-950 focus:outline-none focus:ring-2 focus:ring-forest-800 mb-3"
@@ -250,13 +252,13 @@ export default function OrderTracking() {
             <div className="mb-3">
               <input
                 type="url"
-                placeholder="Lien d'une photo justificative (obligatoire)"
+                placeholder={t("order.evidencePlaceholder")}
                 value={evidenceUrl}
                 onChange={(e) => setEvidenceUrl(e.target.value)}
                 className="w-full px-3 py-2 border border-forest-300 rounded-md font-body text-forest-950 focus:outline-none focus:ring-2 focus:ring-forest-800"
               />
               <p className="text-[11px] text-forest-500 mt-1">
-                Une preuve est requise pour un avis 1–2 étoiles (FR-38).
+                {t("order.evidenceNote")}
               </p>
             </div>
           )}
@@ -265,7 +267,7 @@ export default function OrderTracking() {
             onClick={submitReview}
             className="w-full bg-forest-800 text-cream py-2.5 rounded-md font-medium hover:bg-forest-950 transition"
           >
-            Publier mon avis
+            {t("order.publishReview")}
           </button>
         </div>
       )}
@@ -273,7 +275,7 @@ export default function OrderTracking() {
       {reviewDone && (
         <div className="receipt-stub bg-white border border-leaf/40 p-6 text-center">
           <p className="text-leaf font-medium">
-            {reviewHeld ? "Merci — votre avis est en cours de vérification." : "Merci pour votre avis ✓"}
+            {reviewHeld ? t("order.reviewHeld") : t("order.reviewThanks")}
           </p>
         </div>
       )}

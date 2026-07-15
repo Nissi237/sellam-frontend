@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, type FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { MapPin, Store, Smartphone, ShieldCheck, ArrowLeft, Plus } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
@@ -12,6 +13,7 @@ type DeliveryMode = "pickup" | "delivery";
 type PaymentState = "form" | "initiating" | "awaiting_pin" | "success";
 
 export default function Checkout() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { items, totalAmount, clearCart } = useCart();
   const { isAuthenticated } = useAuth();
@@ -45,10 +47,10 @@ export default function Checkout() {
     return (
       <section className="max-w-md mx-auto px-4 py-16 text-center">
         <p className="text-forest-800/70 font-body mb-4">
-          Connectez-vous pour finaliser votre commande.
+          {t("checkout.loginToOrder")}
         </p>
         <Link to="/login" className="text-forest-800 underline">
-          Se connecter / créer un compte
+          {t("common.loginLink")}
         </Link>
       </section>
     );
@@ -57,9 +59,9 @@ export default function Checkout() {
   if (items.length === 0 && paymentState === "form") {
     return (
       <section className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <p className="text-forest-800/70 font-body mb-4">Votre panier est vide.</p>
+        <p className="text-forest-800/70 font-body mb-4">{t("cart.empty")}</p>
         <Link to="/browse" className="text-forest-800 underline">
-          Parcourir les produits
+          {t("cart.browseProducts")}
         </Link>
       </section>
     );
@@ -71,11 +73,11 @@ export default function Checkout() {
     e.preventDefault();
     setError("");
     if (deliveryMode === "delivery" && !address.trim()) {
-      setError("Adresse de livraison requise.");
+      setError(t("checkout.addressRequired"));
       return;
     }
     if (!selected) {
-      setError("Sélectionnez ou ajoutez un compte Mobile Money.");
+      setError(t("checkout.selectMomo"));
       return;
     }
 
@@ -113,7 +115,7 @@ export default function Checkout() {
               setTimeout(() => navigate(`/order-confirmation/${order.id}`), 700);
             } else if (paymentStatus === "failed") {
               if (pollRef.current) clearInterval(pollRef.current);
-              setError("Paiement échoué ou annulé.");
+              setError(t("checkout.payFailed"));
               setPaymentState("form");
             }
           } catch {
@@ -121,12 +123,12 @@ export default function Checkout() {
           }
           if (tries >= 20) {
             if (pollRef.current) clearInterval(pollRef.current);
-            setError("Délai de paiement dépassé. Vérifiez votre téléphone puis réessayez.");
+            setError(t("checkout.payTimeout"));
             setPaymentState("form");
           }
         }, 3000);
       } catch (err) {
-        setError(apiError(err, "Le paiement a échoué."));
+        setError(apiError(err, t("checkout.payError")));
         setPaymentState("form");
       }
     })();
@@ -140,33 +142,31 @@ export default function Checkout() {
       <section className="max-w-md mx-auto px-4 py-20 text-center">
         {paymentState === "initiating" && (
           <>
-            <p className="font-body text-forest-800 mb-2">Initialisation du paiement…</p>
-            <p className="text-sm text-forest-500">Connexion à {selected?.provider}</p>
+            <p className="font-body text-forest-800 mb-2">{t("checkout.initiating")}</p>
+            <p className="text-sm text-forest-500">{t("checkout.connectingTo", { provider: selected?.provider })}</p>
           </>
         )}
         {paymentState === "awaiting_pin" && (
           <>
             <Smartphone size={40} className="mx-auto text-forest-800 mb-4 animate-pulse" />
-            <p className="font-body text-forest-950 font-medium mb-2">Vérifiez votre téléphone</p>
+            <p className="font-body text-forest-950 font-medium mb-2">{t("checkout.checkPhone")}</p>
             <p className="text-sm text-forest-800/80">
-              Une demande de paiement de{" "}
-              <span className="font-mono">{formatPrice(totalAmount)}</span> a été envoyée à votre
-              numéro {selected?.provider}. Validez-la avec votre code secret.
+              {t("checkout.requestSent", { price: formatPrice(totalAmount), provider: selected?.provider })}
             </p>
             {ussd && (
               <p className="mt-4 text-sm text-forest-800/80">
-                Si aucune fenêtre ne s'affiche, composez ce code depuis votre téléphone :
+                {t("checkout.ussdHint")}
                 <br />
                 <span className="font-mono text-lg text-forest-950 tracking-wide">{ussd}</span>
               </p>
             )}
-            <p className="mt-4 text-xs text-forest-500">En attente de confirmation…</p>
+            <p className="mt-4 text-xs text-forest-500">{t("checkout.awaitingConfirm")}</p>
           </>
         )}
         {paymentState === "success" && (
           <>
             <ShieldCheck size={40} className="mx-auto text-leaf mb-4" />
-            <p className="font-body text-forest-950 font-medium">Paiement confirmé ✓</p>
+            <p className="font-body text-forest-950 font-medium">{t("checkout.confirmed")}</p>
           </>
         )}
       </section>
@@ -179,15 +179,15 @@ export default function Checkout() {
         to="/cart"
         className="inline-flex items-center gap-1 text-sm text-forest-800 hover:text-forest-950 mb-6"
       >
-        <ArrowLeft size={16} /> Retour au panier
+        <ArrowLeft size={16} /> {t("checkout.backToCart")}
       </Link>
 
-      <h1 className="font-display text-2xl text-forest-950 mb-6">Paiement</h1>
+      <h1 className="font-display text-2xl text-forest-950 mb-6">{t("checkout.title")}</h1>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         {/* Delivery method (FR-8/FR-16) */}
         <div>
-          <p className="text-sm font-medium text-forest-800 mb-2">Mode de livraison</p>
+          <p className="text-sm font-medium text-forest-800 mb-2">{t("checkout.deliveryMode")}</p>
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
@@ -199,7 +199,7 @@ export default function Checkout() {
               }`}
             >
               <MapPin size={18} />
-              <span className="text-sm">Livraison</span>
+              <span className="text-sm">{t("checkout.delivery")}</span>
             </button>
             <button
               type="button"
@@ -211,14 +211,14 @@ export default function Checkout() {
               }`}
             >
               <Store size={18} />
-              <span className="text-sm">Retrait au marché</span>
+              <span className="text-sm">{t("checkout.pickup")}</span>
             </button>
           </div>
         </div>
 
         {deliveryMode === "delivery" && (
           <textarea
-            placeholder="Adresse de livraison (quartier, points de repère…)"
+            placeholder={t("checkout.addressPlaceholder")}
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             className={inputClass}
@@ -229,13 +229,13 @@ export default function Checkout() {
         {/* Mobile Money account (FR-14) */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-medium text-forest-800">Compte Mobile Money</p>
+            <p className="text-sm font-medium text-forest-800">{t("checkout.momoAccount")}</p>
             <button
               type="button"
               onClick={() => setShowAdd((s) => !s)}
               className="text-xs text-forest-800 flex items-center gap-1 underline"
             >
-              <Plus size={12} /> Ajouter
+              <Plus size={12} /> {t("checkout.add")}
             </button>
           </div>
 
@@ -272,7 +272,7 @@ export default function Checkout() {
           {(showAdd || accounts.length === 0) && (
             <div className="border border-dashed border-forest-300 rounded-md p-3">
               <p className="text-xs text-forest-500 mb-2">
-                Reliez un compte MTN MoMo ou Orange Money :
+                {t("checkout.linkMomo")}
               </p>
               <MomoAccounts
                 compact
@@ -286,7 +286,7 @@ export default function Checkout() {
         </div>
 
         <div className="border-t-2 border-dashed border-forest-300 pt-4 flex items-center justify-between">
-          <span className="font-body text-forest-800">Total</span>
+          <span className="font-body text-forest-800">{t("common.total")}</span>
           <span className="font-mono text-2xl text-forest-950">{formatPrice(totalAmount)}</span>
         </div>
 
@@ -297,7 +297,7 @@ export default function Checkout() {
           disabled={!selected}
           className="bg-forest-800 text-cream py-3 rounded-md font-medium hover:bg-forest-950 transition disabled:opacity-50"
         >
-          Payer {formatPrice(totalAmount)}
+          {t("checkout.pay", { price: formatPrice(totalAmount) })}
         </button>
       </form>
     </section>

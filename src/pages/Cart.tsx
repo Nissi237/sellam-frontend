@@ -1,18 +1,20 @@
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Minus, Plus, Trash2, ArrowLeft } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { formatPrice } from "../utils/format";
 
 export default function Cart() {
+  const { t } = useTranslation();
   const { items, updateQuantity, removeItem, totalAmount } = useCart();
   const navigate = useNavigate();
 
   if (items.length === 0) {
     return (
       <section className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <p className="text-forest-800/70 font-body mb-4">Votre panier est vide.</p>
+        <p className="text-forest-800/70 font-body mb-4">{t("cart.empty")}</p>
         <Link to="/browse" className="text-forest-800 underline">
-          Parcourir les produits
+          {t("cart.browseProducts")}
         </Link>
       </section>
     );
@@ -24,10 +26,10 @@ export default function Cart() {
         to="/browse"
         className="inline-flex items-center gap-1 text-sm text-forest-800 hover:text-forest-950 mb-6"
       >
-        <ArrowLeft size={16} /> Continuer mes achats
+        <ArrowLeft size={16} /> {t("cart.continueShopping")}
       </Link>
 
-      <h1 className="font-display text-2xl text-forest-950 mb-6">Panier</h1>
+      <h1 className="font-display text-2xl text-forest-950 mb-6">{t("cart.title")}</h1>
 
       <div className="flex flex-col gap-4 mb-6">
         {items.map(({ product, quantity, unitPrice }) => (
@@ -51,7 +53,7 @@ export default function Cart() {
               <button
                 onClick={() => updateQuantity(product.id, quantity - 1)}
                 className="p-1.5 hover:bg-forest-300/20"
-                aria-label="Diminuer la quantité"
+                aria-label={t("cart.decrease")}
               >
                 <Minus size={14} />
               </button>
@@ -59,7 +61,7 @@ export default function Cart() {
               <button
                 onClick={() => updateQuantity(product.id, quantity + 1)}
                 className="p-1.5 hover:bg-forest-300/20"
-                aria-label="Augmenter la quantité"
+                aria-label={t("cart.increase")}
               >
                 <Plus size={14} />
               </button>
@@ -67,7 +69,7 @@ export default function Cart() {
             <button
               onClick={() => removeItem(product.id)}
               className="text-clay hover:text-clay/70"
-              aria-label="Retirer du panier"
+              aria-label={t("cart.remove")}
             >
               <Trash2 size={18} />
             </button>
@@ -76,7 +78,7 @@ export default function Cart() {
       </div>
 
       <div className="border-t-2 border-dashed border-forest-300 pt-4 flex items-center justify-between mb-6">
-        <span className="font-body text-forest-800">Total</span>
+        <span className="font-body text-forest-800">{t("common.total")}</span>
         <span className="font-mono text-2xl text-forest-950">{formatPrice(totalAmount)}</span>
       </div>
 
@@ -84,7 +86,7 @@ export default function Cart() {
         onClick={() => navigate("/checkout")}
         className="w-full bg-forest-800 text-cream py-3 rounded-md font-medium hover:bg-forest-950 transition"
       >
-        Passer à la caisse
+        {t("cart.checkout")}
       </button>
     </section>
   );

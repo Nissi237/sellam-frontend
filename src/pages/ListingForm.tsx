@@ -1,5 +1,6 @@
 import { useState, useEffect, type FormEvent, type ChangeEvent } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Plus, Trash2, Upload, ShieldCheck } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -12,10 +13,15 @@ import {
 import { apiError } from "../api/client";
 import type { BulkPriceTier } from "../types/product";
 
-const categories = ["Fruits & légumes", "Provisions", "Textiles"];
+const categories = [
+  { value: "Fruits & légumes", key: "produce" },
+  { value: "Provisions", key: "groceries" },
+  { value: "Textiles", key: "textiles" },
+];
 const units = ["kg", "bassine", "sac", "pièce", "carton"];
 
 export default function ListingForm() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { isAuthenticated, user } = useAuth();
@@ -62,16 +68,17 @@ export default function ListingForm() {
         setMarket(p.market ?? "");
         setBulkTiers(p.bulkPriceTiers ?? []);
       })
-      .catch(() => setError("Annonce introuvable."));
+      .catch(() => setError(t("listing.notFound")));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   if (!isAuthenticated || user?.role !== "seller") {
     return (
       <section className="max-w-md mx-auto px-4 py-16 text-center">
         <p className="text-forest-800/70 font-body mb-4">
-          Vous devez être connecté en tant que vendeur.
+          {t("listing.mustBeSeller")}
         </p>
-        <Link to="/login" className="text-forest-800 underline">Se connecter</Link>
+        <Link to="/login" className="text-forest-800 underline">{t("seller.login")}</Link>
       </section>
     );
   }
@@ -89,7 +96,7 @@ export default function ListingForm() {
       const { url } = await uploadFile(file);
       setter(url);
     } catch (err) {
-      setError(apiError(err, "Échec de l'envoi du fichier."));
+      setError(apiError(err, t("listing.uploadError")));
     } finally {
       setUploading(null);
     }
@@ -155,7 +162,7 @@ export default function ListingForm() {
       await updateProduct(proofPromptId, { ownershipProofUrl: url });
       navigate("/sell");
     } catch (err) {
-      setError(apiError(err, "Échec de l'envoi."));
+      setError(apiError(err, t("listing.uploadError")));
       setUploading(null);
     }
   };
@@ -171,16 +178,14 @@ export default function ListingForm() {
       <section className="max-w-xl mx-auto px-4 py-10">
         <div className="receipt-stub bg-white border border-clay/40 p-5">
           <p className="flex items-center gap-2 font-medium text-forest-950 mb-2">
-            <ShieldCheck size={18} className="text-clay" /> Cette image est déjà utilisée
+            <ShieldCheck size={18} className="text-clay" /> {t("listing.proofPromptTitle")}
           </p>
           <p className="text-sm text-forest-800/80 mb-4">
-            Un autre vendeur propose déjà ce visuel — c'est autorisé. Votre annonce est
-            <strong> publiée</strong>. Pour lever le signalement, ajoutez une preuve de propriété
-            (photo ou vidéo du produit avec vous / votre étal, facture…).
+            {t("listing.proofPromptBody")}
           </p>
           <label className={fileLabel}>
             <Upload size={16} />
-            {uploading === "proof-prompt" ? "Envoi…" : "Ajouter une preuve (image ou vidéo)"}
+            {uploading === "proof-prompt" ? t("listing.uploading") : t("listing.addProofMedia")}
             <input
               type="file"
               accept="image/*,video/*"
@@ -194,7 +199,7 @@ export default function ListingForm() {
             onClick={() => navigate("/sell")}
             className="mt-4 text-sm text-forest-800 underline"
           >
-            Plus tard — voir mes annonces
+            {t("listing.later")}
           </button>
         </div>
       </section>
@@ -204,13 +209,13 @@ export default function ListingForm() {
   return (
     <section className="max-w-xl mx-auto px-4 py-8">
       <h1 className="font-display text-2xl text-forest-950 mb-6">
-        {isEdit ? "Modifier l'annonce" : "Nouvelle annonce"}
+        {isEdit ? t("listing.editTitle") : t("listing.newTitle")}
       </h1>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
           type="text"
-          placeholder="Nom du produit"
+          placeholder={t("listing.namePlaceholder")}
           value={name}
           onChange={(e) => setName(e.target.value)}
           className={inputClass}
@@ -220,12 +225,12 @@ export default function ListingForm() {
         <div className="grid grid-cols-2 gap-3">
           <select value={category} onChange={(e) => setCategory(e.target.value)} className={inputClass}>
             {categories.map((c) => (
-              <option key={c} value={c}>{c}</option>
+              <option key={c.value} value={c.value}>{t(`category.${c.key}`)}</option>
             ))}
           </select>
           <select value={unit} onChange={(e) => setUnit(e.target.value)} className={inputClass}>
             {units.map((u) => (
-              <option key={u} value={u}>{u}</option>
+              <option key={u} value={u}>{t(`unit.${u}`)}</option>
             ))}
           </select>
         </div>
@@ -233,7 +238,7 @@ export default function ListingForm() {
         <div className="grid grid-cols-2 gap-3">
           <input
             type="number"
-            placeholder="Prix (FCFA)"
+            placeholder={t("listing.pricePlaceholder")}
             value={price}
             onChange={(e) => setPrice(e.target.value)}
             className={inputClass}
@@ -242,7 +247,7 @@ export default function ListingForm() {
           />
           <input
             type="number"
-            placeholder="Quantité disponible"
+            placeholder={t("listing.quantityPlaceholder")}
             value={quantityAvailable}
             onChange={(e) => setQuantityAvailable(e.target.value)}
             className={inputClass}
@@ -263,7 +268,7 @@ export default function ListingForm() {
             onChange={(e) => setQualityGrade(e.target.value as "A" | "B" | "C" | "")}
             className={inputClass}
           >
-            <option value="">Grade qualité (optionnel)</option>
+            <option value="">{t("listing.gradeOptional")}</option>
             <option value="A">A</option>
             <option value="B">B</option>
             <option value="C">C</option>
@@ -272,7 +277,7 @@ export default function ListingForm() {
 
         <input
           type="text"
-          placeholder="Marché (ex : Marché Central)"
+          placeholder={t("listing.marketPlaceholder")}
           value={market}
           onChange={(e) => setMarket(e.target.value)}
           className={inputClass}
@@ -280,10 +285,10 @@ export default function ListingForm() {
 
         {/* Photo upload */}
         <div>
-          <p className="text-sm font-medium text-forest-800 mb-2">Photo du produit</p>
+          <p className="text-sm font-medium text-forest-800 mb-2">{t("listing.photo")}</p>
           <div className="flex items-center gap-3">
             <label className={fileLabel}>
-              <Upload size={16} /> {uploading === "photo" ? "Envoi…" : "Choisir une image"}
+              <Upload size={16} /> {uploading === "photo" ? t("listing.uploading") : t("listing.chooseImage")}
               <input
                 type="file"
                 accept="image/*"
@@ -301,11 +306,11 @@ export default function ListingForm() {
         {/* Video upload (optional) */}
         <div>
           <p className="text-sm font-medium text-forest-800 mb-2">
-            Vidéo du produit <span className="text-forest-500 font-normal">(optionnel)</span>
+            {t("listing.video")} <span className="text-forest-500 font-normal">{t("listing.optional")}</span>
           </p>
           <div className="flex items-center gap-3">
             <label className={fileLabel}>
-              <Upload size={16} /> {uploading === "video" ? "Envoi…" : "Choisir une vidéo"}
+              <Upload size={16} /> {uploading === "video" ? t("listing.uploading") : t("listing.chooseVideo")}
               <input
                 type="file"
                 accept="video/*"
@@ -321,7 +326,7 @@ export default function ListingForm() {
         </div>
 
         <textarea
-          placeholder="Description"
+          placeholder={t("listing.descriptionPlaceholder")}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className={inputClass}
@@ -331,16 +336,14 @@ export default function ListingForm() {
         {/* Proof of ownership (optional; expected when reusing an existing image) */}
         <div className="border border-dashed border-forest-300 rounded-md p-3">
           <p className="text-sm font-medium text-forest-800 mb-1">
-            Preuve de propriété <span className="text-forest-500 font-normal">(optionnel)</span>
+            {t("listing.proof")} <span className="text-forest-500 font-normal">{t("listing.optional")}</span>
           </p>
           <p className="text-[11px] text-forest-500 mb-2">
-            Vous pouvez réutiliser l'image d'un produit déjà en vente, au même prix ou à un prix
-            différent. Si l'image est déjà utilisée, joignez une preuve que le produit est bien à
-            vous (photo/vidéo avec le produit, facture…).
+            {t("listing.proofNote")}
           </p>
           <div className="flex items-center gap-3">
             <label className={fileLabel}>
-              <Upload size={16} /> {uploading === "proof" ? "Envoi…" : "Ajouter une preuve"}
+              <Upload size={16} /> {uploading === "proof" ? t("listing.uploading") : t("listing.addProof")}
               <input
                 type="file"
                 accept="image/*,video/*"
@@ -349,27 +352,27 @@ export default function ListingForm() {
                 disabled={uploading === "proof"}
               />
             </label>
-            {ownershipProofUrl && <span className="text-xs text-leaf">✓ preuve ajoutée</span>}
+            {ownershipProofUrl && <span className="text-xs text-leaf">{t("listing.proofAdded")}</span>}
           </div>
         </div>
 
         {/* Bulk price tiers (FR-5) */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-medium text-forest-800">Tarifs dégressifs (optionnel)</p>
+            <p className="text-sm font-medium text-forest-800">{t("listing.bulkTiers")}</p>
             <button
               type="button"
               onClick={addTierRow}
               className="flex items-center gap-1 text-xs text-forest-800 border border-forest-300 rounded-full px-2 py-1 hover:bg-forest-300/20"
             >
-              <Plus size={12} /> Ajouter un palier
+              <Plus size={12} /> {t("listing.addTier")}
             </button>
           </div>
           {bulkTiers.map((tier, index) => (
             <div key={index} className="flex items-center gap-2 mb-2">
               <input
                 type="number"
-                placeholder="Qté min"
+                placeholder={t("listing.minQty")}
                 value={tier.minQuantity || ""}
                 onChange={(e) => updateTierRow(index, "minQuantity", Number(e.target.value))}
                 className={inputClass}
@@ -377,7 +380,7 @@ export default function ListingForm() {
               />
               <input
                 type="number"
-                placeholder="Prix unitaire"
+                placeholder={t("listing.unitPrice")}
                 value={tier.price || ""}
                 onChange={(e) => updateTierRow(index, "price", Number(e.target.value))}
                 className={inputClass}
@@ -397,24 +400,24 @@ export default function ListingForm() {
         {/* Origin / authenticity claim (FR-41) */}
         <div className="border border-dashed border-forest-300 rounded-md p-3">
           <p className="text-sm font-medium text-forest-800 mb-2">
-            Allégation d'origine (optionnel)
+            {t("listing.originClaim")}
           </p>
           <input
             type="text"
-            placeholder='ex : "Fait au Cameroun"'
+            placeholder={t("listing.originPlaceholder")}
             value={originClaim}
             onChange={(e) => setOriginClaim(e.target.value)}
             className={`${inputClass} mb-2`}
           />
           <input
             type="url"
-            placeholder="Lien du document justificatif (facture, certificat…)"
+            placeholder={t("listing.originDocPlaceholder")}
             value={originDocUrl}
             onChange={(e) => setOriginDocUrl(e.target.value)}
             className={inputClass}
           />
           <p className="text-[11px] text-forest-500 mt-1">
-            L'allégation ne s'affiche qu'après vérification du document par un administrateur.
+            {t("listing.originNote")}
           </p>
         </div>
 
@@ -425,7 +428,7 @@ export default function ListingForm() {
           disabled={saving || Boolean(uploading)}
           className="bg-forest-800 text-cream py-3 rounded-md font-medium hover:bg-forest-950 transition mt-2 disabled:opacity-60"
         >
-          {isEdit ? "Enregistrer les modifications" : "Publier l'annonce"}
+          {isEdit ? t("listing.save") : t("listing.publish")}
         </button>
       </form>
     </section>

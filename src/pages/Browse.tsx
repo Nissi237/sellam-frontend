@@ -5,12 +5,17 @@ import ProductCard from "../components/ProductCard";
 import { fetchProducts } from "../api/endpoints";
 import type { Product } from "../types/product";
 
-const categories = ["Tous", "Fruits & légumes", "Provisions", "Textiles"] as const;
+const categories = [
+  { value: "Tous", key: "all" },
+  { value: "Fruits & légumes", key: "produce" },
+  { value: "Provisions", key: "groceries" },
+  { value: "Textiles", key: "textiles" },
+] as const;
 
 export default function Browse() {
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<(typeof categories)[number]>("Tous");
+  const [category, setCategory] = useState<(typeof categories)[number]["value"]>("Tous");
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -18,8 +23,9 @@ export default function Browse() {
   useEffect(() => {
     fetchProducts()
       .then(setProducts)
-      .catch(() => setError("Impossible de charger les produits."))
+      .catch(() => setError(t("browse.loadError")))
       .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const filtered = useMemo(() => {
@@ -46,7 +52,7 @@ export default function Browse() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Rechercher un produit..."
+            placeholder={t("browse.searchPlaceholder")}
             className="w-full pl-10 pr-4 py-2 border border-forest-300 rounded-md font-body text-forest-950 focus:outline-none focus:ring-2 focus:ring-forest-800"
           />
         </div>
@@ -54,27 +60,27 @@ export default function Browse() {
         <div className="flex gap-2 overflow-x-auto">
           {categories.map((c) => (
             <button
-              key={c}
-              onClick={() => setCategory(c)}
+              key={c.value}
+              onClick={() => setCategory(c.value)}
               className={`px-3 py-2 rounded-full text-sm font-body whitespace-nowrap transition ${
-                category === c
+                category === c.value
                   ? "bg-forest-800 text-cream"
                   : "bg-forest-300/30 text-forest-800 hover:bg-forest-300/60"
               }`}
             >
-              {c}
+              {t(`category.${c.key}`)}
             </button>
           ))}
         </div>
       </div>
 
       {loading ? (
-        <p className="text-forest-800/70 font-body text-center py-16">Chargement…</p>
+        <p className="text-forest-800/70 font-body text-center py-16">{t("common.loading")}</p>
       ) : error ? (
         <p className="text-clay font-body text-center py-16">{error}</p>
       ) : filtered.length === 0 ? (
         <p className="text-forest-800/70 font-body text-center py-16">
-          Aucun produit trouvé. Essayez une autre recherche.
+          {t("browse.empty")}
         </p>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
