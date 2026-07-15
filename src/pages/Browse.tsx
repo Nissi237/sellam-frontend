@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router-dom";
 import { Search } from "lucide-react";
 import ProductCard from "../components/ProductCard";
 import { fetchProducts } from "../api/endpoints";
@@ -12,10 +13,16 @@ const categories = [
   { value: "Textiles", key: "textiles" },
 ] as const;
 
+type CategoryValue = (typeof categories)[number]["value"];
+
 export default function Browse() {
   const { t } = useTranslation();
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<(typeof categories)[number]["value"]>("Tous");
+  const [params] = useSearchParams();
+
+  // Honour deep-links from the home page / header search (?category=, ?q=).
+  const initialCategory = categories.find((c) => c.value === params.get("category"))?.value ?? "Tous";
+  const [query, setQuery] = useState(params.get("q") ?? "");
+  const [category, setCategory] = useState<CategoryValue>(initialCategory);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

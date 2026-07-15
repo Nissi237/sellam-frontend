@@ -15,7 +15,23 @@
   "home": {
     "eyebrow": "En direct des marchés de Douala",
     "headline": "Chaque étal. Une seule appli.",
-    "subhead": "Achetez chez des vendeurs vérifiés, ou proposez vos produits à toute la ville."
+    "subhead": "Achetez chez des vendeurs vérifiés, ou proposez vos produits à toute la ville.",
+    "heroPromo": "Jusqu'à −50 % sur votre première commande",
+    "shopNow": "Acheter maintenant",
+    "featuredCategories": "Catégories en vedette",
+    "itemsCount": "{{count}} articles",
+    "popular": "Produits populaires",
+    "viewAll": "Voir tout",
+    "promo1Title": "Des produits frais et propres, chaque jour",
+    "promo2Title": "Payez en toute sécurité avec Mobile Money",
+    "promo3Title": "Achetez en gros, payez moins",
+    "feature1Title": "Vendeurs vérifiés",
+    "feature1Sub": "Identité et étal contrôlés",
+    "feature2Title": "Paiement sécurisé",
+    "feature2Sub": "Séquestre MTN & Orange Money",
+    "feature3Title": "Livraison locale",
+    "feature3Sub": "Suivi en temps réel",
+    "announce": "Super offres — payez en toute sécurité avec Mobile Money"
   },
   "auth": {
     "loginTitle": "Connexion",
@@ -56,7 +72,9 @@
     "loginRequired": "Connectez-vous pour continuer.",
     "loginLink": "Se connecter / créer un compte",
     "delete": "Supprimer",
-    "sponsored": "Sponsorisé"
+    "sponsored": "Sponsorisé",
+    "add": "Ajouter",
+    "outOfStock": "Rupture de stock"
   },
   "category": {
     "all": "Tous",

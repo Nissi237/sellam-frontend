@@ -15,7 +15,23 @@
   "home": {
     "eyebrow": "Live from Douala's markets",
     "headline": "Every stall. One app.",
-    "subhead": "Buy from verified sellers, or list your goods to the whole city."
+    "subhead": "Buy from verified sellers, or list your goods to the whole city.",
+    "heroPromo": "Up to −50% on your first order",
+    "shopNow": "Shop now",
+    "featuredCategories": "Featured categories",
+    "itemsCount": "{{count}} items",
+    "popular": "Popular products",
+    "viewAll": "View all",
+    "promo1Title": "Fresh & clean products, every day",
+    "promo2Title": "Pay securely with Mobile Money",
+    "promo3Title": "Buy in bulk, pay less",
+    "feature1Title": "Verified sellers",
+    "feature1Sub": "Identity & stall checked",
+    "feature2Title": "Secure payment",
+    "feature2Sub": "MTN & Orange Money escrow",
+    "feature3Title": "Local delivery",
+    "feature3Sub": "Real-time tracking",
+    "announce": "Super deals — pay securely with Mobile Money"
   },
   "auth": {
     "loginTitle": "Log in",
@@ -56,7 +72,9 @@
     "loginRequired": "Please log in to continue.",
     "loginLink": "Log in / create an account",
     "delete": "Delete",
-    "sponsored": "Sponsored"
+    "sponsored": "Sponsored",
+    "add": "Add",
+    "outOfStock": "Out of stock"
   },
   "category": {
     "all": "All",
