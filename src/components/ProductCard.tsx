@@ -3,14 +3,13 @@ import { useTranslation } from "react-i18next";
 import type { Product } from "../types/product";
 import { formatPrice } from "../utils/format";
 import { useCart } from "../context/CartContext";
+import { productImage, hasUsablePhoto } from "../utils/productImage";
 import { BadgeCheck, Megaphone, Star, Plus } from "lucide-react";
-
-const FALLBACK =
-  "https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&q=80&auto=format&fit=crop";
 
 export default function ProductCard({ product }: { product: Product }) {
   const { t } = useTranslation();
   const { addItem } = useCart();
+  const illustration = productImage(product.name, product.category, product.id);
 
   const hasPromo = product.promoPrice != null && product.promoPrice < product.price;
   const unitPrice = hasPromo ? product.promoPrice! : product.price;
@@ -34,9 +33,9 @@ export default function ProductCard({ product }: { product: Product }) {
     >
       <div className="relative">
         <img
-          src={product.photoUrl || FALLBACK}
+          src={hasUsablePhoto(product.photoUrl) ? product.photoUrl : illustration}
           onError={(e) => {
-            if (e.currentTarget.src !== FALLBACK) e.currentTarget.src = FALLBACK;
+            if (e.currentTarget.src !== illustration) e.currentTarget.src = illustration;
           }}
           alt={product.name}
           className={`w-full h-36 object-cover rounded mb-3 ${outOfStock ? "opacity-60" : ""}`}

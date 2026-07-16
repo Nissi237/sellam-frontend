@@ -6,6 +6,7 @@ import { fetchProduct, fetchReviews, respondToReview, disputeReview } from "../a
 import type { Review } from "../api/endpoints";
 import type { Product } from "../types/product";
 import { formatPrice } from "../utils/format";
+import { productImage, hasUsablePhoto } from "../utils/productImage";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 
@@ -101,7 +102,11 @@ export default function ProductDetail() {
       <div className="grid sm:grid-cols-2 gap-8">
         <div>
           <img
-            src={product.photoUrl}
+            src={hasUsablePhoto(product.photoUrl) ? product.photoUrl : productImage(product.name, product.category, product.id)}
+            onError={(e) => {
+              const fb = productImage(product.name, product.category, product.id);
+              if (e.currentTarget.src !== fb) e.currentTarget.src = fb;
+            }}
             alt={product.name}
             className="w-full h-80 object-cover rounded-lg border border-forest-300"
           />

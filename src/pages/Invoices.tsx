@@ -117,13 +117,13 @@ export default function Invoices() {
                   <div key={c.id} className="receipt-stub bg-white border border-forest-300 p-4 flex items-center justify-between">
                     <div>
                       <p className="font-body font-semibold text-forest-950">
-                        {c.quantity} {t(`unit.${c.unit}`, c.unit)} · {t(`category.${categoryKeys[c.productCategory] ?? ""}`, c.productCategory)}
+                        {c.quantity} {t(`unit.${c.unit}`, c.unit ?? "")} · {t(`category.${categoryKeys[c.productCategory] ?? ""}`, c.productCategory)}
                       </p>
                       <p className="text-xs text-forest-500">
                         {t("invoice.contractMeta", {
                           freq: t(`freq.${c.frequency}`, c.frequency),
                           price: formatPrice(c.unitPrice),
-                          unit: t(`unit.${c.unit}`, c.unit),
+                          unit: t(`unit.${c.unit}`, c.unit ?? ""),
                           party: isSeller ? c.buyerName : c.sellerName,
                           date: c.nextInvoiceDate?.slice(0, 10),
                         })}

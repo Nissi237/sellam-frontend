@@ -1,5 +1,9 @@
 {
   "nav": {
+    "home": "Home",
+    "about": "About",
+    "contact": "Contact",
+    "faq": "FAQ",
     "browse": "Browse",
     "sell": "Sell",
     "login": "Log in",
@@ -504,5 +508,64 @@
     "actNsales": "{{n}} sales",
     "actNorders": "{{n}} orders",
     "actNsignups": "{{n}} sign-ups"
+  },
+  "about": {
+    "title": "About Sellam",
+    "lead": "Sellam is a digital marketplace built for Cameroon: it brings individual buyers, market sellers and corporate buyers together in one trusted app.",
+    "missionTitle": "Our mission",
+    "missionBody": "To make online commerce safe, trustworthy and accessible for everyone. We connect informal merchants with buyers across the city through escrow-protected Mobile Money payment, tracked delivery and verified sellers — so anyone can buy and sell with confidence.",
+    "storyTitle": "Our story",
+    "storyBody": "Sellam grew from a simple observation in the markets of Douala: merchants and buyers had no unified, reliable channel to transact online safely. The platform was built to close that gap and bridge retail and business-to-business (B2B) trade.",
+    "valuesTitle": "Our values",
+    "values": [
+      "Trust — verified accounts, reviews and escrow-protected payment.",
+      "Accessibility — mobile-first, right down to low-end phones.",
+      "Community — supporting local sellers and neighbourhood trade."
+    ],
+    "whatTitle": "What Sellam offers",
+    "what": [
+      "Catalogue and search for fresh produce and groceries.",
+      "Mobile Money payment (MTN & Orange) held in escrow, released on delivery.",
+      "Real-time delivery tracking.",
+      "B2B quotes with live chat for bulk purchasing.",
+      "Reviews, loyalty and an administration console."
+    ],
+    "ctaTitle": "Join the marketplace",
+    "ctaText": "Sell your goods to the whole city, or find what you need from verified sellers.",
+    "ctaSell": "Become a seller",
+    "ctaBrowse": "Explore the market"
+  },
+  "contact": {
+    "title": "Contact us",
+    "subtitle": "A question, a partnership, or need help? Get in touch.",
+    "emailLabel": "Email",
+    "emailValue": "contact@sellam.cm",
+    "phoneLabel": "Phone",
+    "phoneValue": "+237 6XX XXX XXX",
+    "addressLabel": "Address",
+    "addressValue": "Douala, Cameroon",
+    "hoursLabel": "Hours",
+    "hoursValue": "Mon – Sat, 8am – 6pm",
+    "formTitle": "Write to us",
+    "nameField": "Your name",
+    "emailField": "Your email",
+    "subjectField": "Subject",
+    "messageField": "Your message",
+    "send": "Send message",
+    "note": "The button opens your email app with the message pre-filled.",
+    "required": "Please fill in all fields."
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "subtitle": "Everything you need to know about buying and selling on Sellam.",
+    "items": [
+      { "q": "How do I place an order?", "a": "Browse the catalogue, add items to your cart, then pay with Mobile Money. The amount is held in escrow until delivery is confirmed." },
+      { "q": "What is escrow payment?", "a": "Your payment is held securely by Sellam and only released to the seller once the order is delivered — protecting both buyer and seller." },
+      { "q": "Which payment methods are accepted?", "a": "MTN Mobile Money and Orange Money. You link your account once, then pay in one step at checkout." },
+      { "q": "How do I become a seller?", "a": "Create a seller account, link your Mobile Money account, and submit your ID and a stall photo for verification. You can then list your products." },
+      { "q": "How does delivery work?", "a": "A partner delivery agent picks up your order and you follow their location in real time until it arrives." },
+      { "q": "Can I buy in bulk (B2B)?", "a": "Yes. Corporate buyers can send a request for quotation (RFQ), negotiate live with sellers and place volume orders." },
+      { "q": "What if an item is wrong or doesn't arrive?", "a": "Because funds stay in escrow until delivery, contact us and the dispute is reviewed before any payout to the seller." }
+    ]
   }
 }

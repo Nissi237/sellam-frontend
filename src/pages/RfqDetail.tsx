@@ -108,7 +108,7 @@ export default function RfqDetail() {
 
       <div className="receipt-stub bg-white border border-forest-300 p-5 mb-6">
         <h1 className="font-display text-xl text-forest-950 mb-1">
-          {rfq.quantity} {t(`unit.${rfq.unit}`, rfq.unit)} · {t(`category.${categoryKeys[rfq.productCategory] ?? ""}`, rfq.productCategory)}
+          {rfq.quantity} {t(`unit.${rfq.unit}`, rfq.unit ?? "")} · {t(`category.${categoryKeys[rfq.productCategory] ?? ""}`, rfq.productCategory)}
         </h1>
         <p className="text-sm text-forest-500 mb-3">
           {t(`freq.${rfq.frequency}`, rfq.frequency)} · {rfq.businessName ?? rfq.buyerName}
@@ -121,14 +121,14 @@ export default function RfqDetail() {
         <form onSubmit={doSubmit} className="receipt-stub bg-white border border-forest-300 p-5 mb-6">
           <p className="font-body font-semibold text-forest-800 mb-3">{t("rfq.proposeQuote")}</p>
           <div className="grid sm:grid-cols-2 gap-3 mb-3">
-            <input type="number" min={0} placeholder={t("rfq.pricePerUnit", { unit: t(`unit.${rfq.unit}`, rfq.unit) })} value={unitPrice}
+            <input type="number" min={0} placeholder={t("rfq.pricePerUnit", { unit: t(`unit.${rfq.unit}`, rfq.unit ?? "") })} value={unitPrice}
               onChange={(e) => setUnitPrice(e.target.value)} className={inputClass} />
             <input type="text" placeholder={t("rfq.deliveryTermsPlaceholder")} value={deliveryTerms}
               onChange={(e) => setDeliveryTerms(e.target.value)} className={inputClass} />
           </div>
           {unitPrice && (
             <p className="text-xs text-forest-500 mb-2">
-              {t("rfq.totalFor", { qty: rfq.quantity, unit: t(`unit.${rfq.unit}`, rfq.unit), amount: formatPrice(Number(unitPrice) * rfq.quantity) })}
+              {t("rfq.totalFor", { qty: rfq.quantity, unit: t(`unit.${rfq.unit}`, rfq.unit ?? ""), amount: formatPrice(Number(unitPrice) * rfq.quantity) })}
             </p>
           )}
           {error && <p className="text-clay text-sm mb-2">{error}</p>}
@@ -152,7 +152,7 @@ export default function RfqDetail() {
                 <div>
                   <p className="font-body font-semibold text-forest-950">{q.sellerName}</p>
                   <p className="font-mono text-forest-800">
-                    {t("rfq.quoteTotal", { price: formatPrice(q.unitPrice), unit: t(`unit.${rfq.unit}`, rfq.unit), amount: formatPrice(total(q)) })}
+                    {t("rfq.quoteTotal", { price: formatPrice(q.unitPrice), unit: t(`unit.${rfq.unit}`, rfq.unit ?? ""), amount: formatPrice(total(q)) })}
                   </p>
                   {q.deliveryTerms && <p className="text-xs text-forest-500">{q.deliveryTerms}</p>}
                 </div>

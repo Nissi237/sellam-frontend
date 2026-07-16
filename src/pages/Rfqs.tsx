@@ -141,7 +141,7 @@ export default function Rfqs() {
               className="receipt-stub bg-white border border-forest-300 p-4 flex items-center justify-between hover:shadow-md transition">
               <div>
                 <p className="font-body font-semibold text-forest-950">
-                  {r.quantity} {t(`unit.${r.unit}`, r.unit)} · {t(`category.${categories.find((c) => c.value === r.productCategory)?.key ?? ""}`, r.productCategory)}
+                  {r.quantity} {t(`unit.${r.unit}`, r.unit ?? "")} · {t(`category.${categories.find((c) => c.value === r.productCategory)?.key ?? ""}`, r.productCategory)}
                 </p>
                 <p className="text-xs text-forest-500">
                   {t(`freq.${r.frequency}`, r.frequency)}

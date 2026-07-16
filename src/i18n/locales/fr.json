@@ -1,5 +1,9 @@
 {
   "nav": {
+    "home": "Accueil",
+    "about": "À propos",
+    "contact": "Contact",
+    "faq": "FAQ",
     "browse": "Parcourir",
     "sell": "Vendre",
     "login": "Connexion",
@@ -504,5 +508,64 @@
     "actNsales": "{{n}} ventes",
     "actNorders": "{{n}} commandes",
     "actNsignups": "{{n}} inscriptions"
+  },
+  "about": {
+    "title": "À propos de Sellam",
+    "lead": "Sellam est une place de marché numérique conçue pour le Cameroun : elle réunit sur une seule application de confiance les acheteurs particuliers, les vendeurs de marché et les acheteurs professionnels.",
+    "missionTitle": "Notre mission",
+    "missionBody": "Rendre le commerce en ligne sûr, fiable et accessible à tous. Nous relions les commerçants informels aux acheteurs de toute la ville grâce au paiement Mobile Money sous séquestre, à la livraison suivie et à des vendeurs vérifiés — pour que chacun puisse acheter et vendre en toute confiance.",
+    "storyTitle": "Notre histoire",
+    "storyBody": "Sellam est né d'un constat simple fait sur les marchés de Douala : commerçants et acheteurs n'avaient aucun canal unifié et fiable pour transiger en ligne en toute sécurité. La plateforme a été construite pour combler ce vide et bâtir un pont entre le commerce de détail et le commerce interentreprises (B2B).",
+    "valuesTitle": "Nos valeurs",
+    "values": [
+      "Confiance — comptes vérifiés, avis et paiement protégé par séquestre.",
+      "Accessibilité — pensé mobile d'abord, jusque sur les téléphones d'entrée de gamme.",
+      "Communauté — soutenir les vendeurs locaux et le commerce de proximité."
+    ],
+    "whatTitle": "Ce que propose Sellam",
+    "what": [
+      "Catalogue et recherche de produits frais et de provisions.",
+      "Paiement Mobile Money (MTN & Orange) sous séquestre, libéré à la livraison.",
+      "Suivi de livraison en temps réel.",
+      "Devis B2B avec messagerie en direct pour les achats en gros.",
+      "Avis, fidélité et console d'administration."
+    ],
+    "ctaTitle": "Rejoignez le marché",
+    "ctaText": "Vendez vos produits à toute la ville, ou trouvez ce qu'il vous faut auprès de vendeurs vérifiés.",
+    "ctaSell": "Devenir vendeur",
+    "ctaBrowse": "Explorer le marché"
+  },
+  "contact": {
+    "title": "Contactez-nous",
+    "subtitle": "Une question, un partenariat ou besoin d'aide ? Écrivez-nous.",
+    "emailLabel": "Email",
+    "emailValue": "contact@sellam.cm",
+    "phoneLabel": "Téléphone",
+    "phoneValue": "+237 6XX XXX XXX",
+    "addressLabel": "Adresse",
+    "addressValue": "Douala, Cameroun",
+    "hoursLabel": "Horaires",
+    "hoursValue": "Lun – Sam, 8h – 18h",
+    "formTitle": "Écrivez-nous",
+    "nameField": "Votre nom",
+    "emailField": "Votre email",
+    "subjectField": "Sujet",
+    "messageField": "Votre message",
+    "send": "Envoyer le message",
+    "note": "Le bouton ouvre votre application de messagerie avec le message pré-rempli.",
+    "required": "Veuillez remplir tous les champs."
+  },
+  "faq": {
+    "title": "Foire aux questions",
+    "subtitle": "Tout ce qu'il faut savoir pour acheter et vendre sur Sellam.",
+    "items": [
+      { "q": "Comment passer une commande ?", "a": "Parcourez le catalogue, ajoutez des articles au panier, puis payez par Mobile Money. Le montant est conservé sous séquestre jusqu'à la confirmation de la livraison." },
+      { "q": "Qu'est-ce que le paiement sous séquestre (escrow) ?", "a": "Votre paiement est retenu en toute sécurité par Sellam et n'est versé au vendeur qu'une fois la commande livrée — ce qui protège l'acheteur comme le vendeur." },
+      { "q": "Quels moyens de paiement sont acceptés ?", "a": "MTN Mobile Money et Orange Money. Vous liez votre compte une fois, puis payez en un geste à la caisse." },
+      { "q": "Comment devenir vendeur ?", "a": "Créez un compte vendeur, liez votre compte Mobile Money et soumettez votre pièce d'identité et une photo de votre étal pour vérification. Vous pourrez ensuite publier vos produits." },
+      { "q": "Comment fonctionne la livraison ?", "a": "Un livreur partenaire prend en charge votre commande et vous suivez sa position en temps réel jusqu'à la livraison." },
+      { "q": "Puis-je acheter en gros (B2B) ?", "a": "Oui. Les acheteurs professionnels peuvent envoyer une demande de devis (RFQ), négocier en direct avec les vendeurs et passer des commandes en volume." },
+      { "q": "Que faire si un article ne correspond pas ou n'arrive pas ?", "a": "Comme les fonds restent sous séquestre jusqu'à la livraison, contactez-nous et le litige est examiné avant tout versement au vendeur." }
+    ]
   }
 }
