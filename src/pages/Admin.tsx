@@ -1,9 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ShieldAlert, FileCheck, Copy, Star, BarChart3, UserCheck, Wallet, RefreshCw } from "lucide-react";
+import { ShieldAlert, FileCheck, Copy, Star, BarChart3, UserCheck, Wallet, RefreshCw, Users, Package, ShoppingBag, Coins, CalendarDays, Table as TableIcon } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { formatPrice } from "../utils/format";
+import NotificationsBell from "../components/NotificationsBell";
+import { LineChart, BarChart, CHART_COLORS } from "../components/charts";
+import Kanban, { type KanbanColumn } from "../components/Kanban";
+import MiniCalendar from "../components/MiniCalendar";
 import {
   adminListReviews,
   adminResolveReview,
@@ -15,6 +19,8 @@ import {
   adminListSellers,
   adminVerifySeller,
   adminListPayouts,
+  adminListAccounts,
+  adminGetProgression,
   retryPayout,
   type FlaggedReview,
   type OriginDoc,
@@ -23,6 +29,8 @@ import {
   type PendingSeller,
   type AdminPayout,
   type PayoutSummary,
+  type AccountsResponse,
+  type Progression,
 } from "../api/endpoints";
 
 export default function Admin() {
@@ -35,6 +43,8 @@ export default function Admin() {
   const [sellers, setSellers] = useState<PendingSeller[]>([]);
   const [payouts, setPayouts] = useState<AdminPayout[]>([]);
   const [payoutSummary, setPayoutSummary] = useState<PayoutSummary | null>(null);
+  const [accounts, setAccounts] = useState<AccountsResponse | null>(null);
+  const [progression, setProgression] = useState<Progression | null>(null);
   const [retrying, setRetrying] = useState<string | null>(null);
 
   const loadPayouts = () =>
@@ -51,6 +61,8 @@ export default function Admin() {
     adminListDuplicates().then(setDups).catch(() => {});
     getMarketInsights().then(setInsights).catch(() => {});
     adminListSellers().then(setSellers).catch(() => {});
+    adminListAccounts().then(setAccounts).catch(() => {});
+    adminGetProgression().then(setProgression).catch(() => {});
     loadPayouts();
   };
 
@@ -71,6 +83,25 @@ export default function Admin() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, user?.role]);
 
+  const growth = useMemo(() => {
+    const signups = progression?.signups ?? [];
+    const orders = progression?.orders ?? [];
+    const labels = signups.map((s) => s.date.slice(5)); // MM-DD
+    const calendar: Record<string, number> = {};
+    for (const s of signups) {
+      const total = s.buyers + s.sellers;
+      if (total > 0) calendar[s.date] = total;
+    }
+    return {
+      labels,
+      buyers: signups.map((s) => s.buyers),
+      sellers: signups.map((s) => s.sellers),
+      orderLabels: orders.map((o) => o.date.slice(5)),
+      orderCounts: orders.map((o) => o.orders),
+      calendar,
+    };
+  }, [progression]);
+
   if (!isAuthenticated || user?.role !== "admin") {
     return (
       <section className="max-w-md mx-auto px-4 py-16 text-center">
@@ -82,51 +113,168 @@ export default function Admin() {
 
   const card = "receipt-stub bg-white border border-forest-300 p-4";
 
-  return (
-    <section className="max-w-3xl mx-auto px-4 py-8">
-      <h1 className="font-display text-2xl text-forest-950 mb-1 flex items-center gap-2">
-        <ShieldAlert size={22} /> {t("admin.consoleTitle")}
-      </h1>
-      <p className="text-xs text-forest-500 mb-6">
-        {t("admin.consoleSubtitle")}
-      </p>
+  const moderationColumns: KanbanColumn[] = [
+    {
+      key: "verify",
+      title: t("dash.colVerify"),
+      accent: CHART_COLORS.CLAY,
+      cards: sellers.map((s) => ({ id: s.userId, title: s.fullName, subtitle: s.marketName ?? "—", badge: t("admin.verify") })),
+    },
+    {
+      key: "reviews",
+      title: t("dash.colReviews"),
+      accent: "var(--color-forest-800)",
+      cards: reviews.map((r) => ({ id: r.id, title: `${r.rating}★ ${r.buyerName}`, subtitle: r.reasons.join(", ") })),
+    },
+    {
+      key: "docs",
+      title: t("dash.colDocs"),
+      accent: "var(--color-forest-500)",
+      cards: docs.map((d) => ({ id: d.id, title: d.productName, subtitle: d.sellerName })),
+    },
+    {
+      key: "dup",
+      title: t("dash.colDup"),
+      accent: CHART_COLORS.LEAF,
+      cards: dups.map((d) => ({ id: d.productId, title: d.productName, subtitle: d.sellerName })),
+    },
+  ];
 
-      {/* Market insights (FR-31) */}
-      {insights && (
-        <>
-          <h2 className="font-body font-semibold text-forest-800 mb-2 flex items-center gap-1">
-            <BarChart3 size={16} /> {t("admin.trendsTitle")}
-          </h2>
-          <div className="grid grid-cols-4 gap-2 mb-4">
-            <div className="receipt-stub bg-white border border-forest-300 p-3">
-              <p className="text-[11px] text-forest-500">{t("admin.gmv")}</p>
-              <p className="font-mono text-sm text-forest-950">{formatPrice(insights.totalGMV)}</p>
-            </div>
-            <div className="receipt-stub bg-white border border-forest-300 p-3">
-              <p className="text-[11px] text-forest-500">{t("admin.orders")}</p>
-              <p className="font-mono text-sm text-forest-950">{insights.orderCount}</p>
-            </div>
-            <div className="receipt-stub bg-white border border-forest-300 p-3">
-              <p className="text-[11px] text-forest-500">{t("admin.activeSellers")}</p>
-              <p className="font-mono text-sm text-forest-950">{insights.activeSellers}</p>
-            </div>
-            <div className="receipt-stub bg-white border border-forest-300 p-3">
-              <p className="text-[11px] text-forest-500">{t("admin.activeBuyers")}</p>
-              <p className="font-mono text-sm text-forest-950">{insights.activeBuyers}</p>
+  const roleBadge: Record<string, string> = {
+    seller: "bg-leaf/15 text-leaf",
+    individual_buyer: "bg-forest-300/40 text-forest-800",
+    corporate_buyer: "bg-clay/15 text-clay",
+    admin: "bg-forest-950/80 text-cream",
+    delivery_agent: "bg-forest-300/40 text-forest-800",
+  };
+
+  return (
+    <section className="max-w-5xl mx-auto px-4 py-8">
+      <div className="flex items-center justify-between mb-1">
+        <h1 className="font-display text-2xl text-forest-950 flex items-center gap-2">
+          <ShieldAlert size={22} /> {t("admin.consoleTitle")}
+        </h1>
+        <NotificationsBell />
+      </div>
+      <p className="text-xs text-forest-500 mb-6">{t("admin.consoleSubtitle")}</p>
+
+      {/* Platform KPIs */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+        <div className="receipt-stub bg-white border border-forest-300 p-4">
+          <p className="flex items-center gap-1 text-xs text-forest-500 mb-1"><Users size={14} /> {t("dash.totalUsers")}</p>
+          <p className="font-mono text-xl text-forest-950">{progression?.totals.users ?? accounts?.total ?? 0}</p>
+        </div>
+        <div className="receipt-stub bg-white border border-forest-300 p-4">
+          <p className="flex items-center gap-1 text-xs text-forest-500 mb-1"><Package size={14} /> {t("dash.totalProducts")}</p>
+          <p className="font-mono text-xl text-forest-950">{progression?.totals.products ?? 0}</p>
+        </div>
+        <div className="receipt-stub bg-white border border-forest-300 p-4">
+          <p className="flex items-center gap-1 text-xs text-forest-500 mb-1"><ShoppingBag size={14} /> {t("dash.totalOrders")}</p>
+          <p className="font-mono text-xl text-forest-950">{progression?.totals.orders ?? 0}</p>
+        </div>
+        <div className="receipt-stub bg-white border border-forest-300 p-4">
+          <p className="flex items-center gap-1 text-xs text-forest-500 mb-1"><Coins size={14} /> {t("dash.gmvTotal")}</p>
+          <p className="font-mono text-xl text-forest-950">{formatPrice(progression?.totals.gmv ?? 0)}</p>
+        </div>
+      </div>
+
+      {/* Platform growth graphs */}
+      <h2 className="font-body font-semibold text-forest-800 mb-3 flex items-center gap-1">
+        <BarChart3 size={16} /> {t("dash.appProgression")}
+      </h2>
+      <div className="grid md:grid-cols-2 gap-4 mb-8">
+        <div className="receipt-stub bg-white border border-forest-300 p-4">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs text-forest-500">{t("dash.signups")}</p>
+            <div className="flex items-center gap-3 text-[11px]">
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: CHART_COLORS.LEAF }} /> {t("dash.buyers")}</span>
+              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm" style={{ background: CHART_COLORS.CLAY }} /> {t("dash.sellers")}</span>
             </div>
           </div>
-          {insights.categories.length > 0 && (
-            <div className="receipt-stub bg-white border border-forest-300 p-4 mb-8">
-              <p className="text-xs text-forest-500 mb-2">{t("admin.byCategory")}</p>
-              {insights.categories.map((c) => (
-                <div key={c.category} className="flex justify-between text-sm py-0.5">
-                  <span className="text-forest-800">{t("admin.avgPriceLine", { category: c.category, price: formatPrice(c.avgPrice) })}</span>
-                  <span className="font-mono text-forest-950">{formatPrice(c.revenue)}</span>
-                </div>
-              ))}
+          <div className="overflow-x-auto">
+            <LineChart
+              labels={growth.labels}
+              series={[
+                { name: t("dash.buyers"), color: CHART_COLORS.LEAF, values: growth.buyers },
+                { name: t("dash.sellers"), color: CHART_COLORS.CLAY, values: growth.sellers },
+              ]}
+            />
+          </div>
+        </div>
+        <div className="receipt-stub bg-white border border-forest-300 p-4">
+          <p className="text-xs text-forest-500 mb-2">{t("dash.ordersTrend")}</p>
+          <div className="overflow-x-auto">
+            <BarChart data={growth.orderLabels.map((l, i) => ({ label: l, value: growth.orderCounts[i] }))} color={CHART_COLORS.FOREST} />
+          </div>
+        </div>
+      </div>
+
+      {/* Moderation Kanban + new-accounts calendar */}
+      <div className="grid lg:grid-cols-3 gap-4 mb-8">
+        <div className="lg:col-span-2">
+          <h2 className="font-body font-semibold text-forest-800 mb-3 flex items-center gap-1"><ShieldAlert size={16} /> {t("dash.moderation")}</h2>
+          <Kanban columns={moderationColumns} />
+        </div>
+        <div>
+          <h2 className="font-body font-semibold text-forest-800 mb-3 flex items-center gap-1"><CalendarDays size={16} /> {t("dash.newAccountsCal")}</h2>
+          <div className="receipt-stub bg-white border border-forest-300 p-4">
+            <MiniCalendar values={growth.calendar} format={(v) => t("dash.actNsignups", { n: v })} />
+          </div>
+        </div>
+      </div>
+
+      {/* All accounts */}
+      {accounts && (
+        <div className="mb-8">
+          <h2 className="font-body font-semibold text-forest-800 mb-3 flex items-center gap-1">
+            <TableIcon size={16} /> {t("dash.accountsTitle", { count: accounts.total })}
+          </h2>
+          <div className="receipt-stub bg-white border border-forest-300 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-[11px] text-forest-500 border-b border-forest-300">
+                  <th className="px-3 py-2 font-medium">{t("dash.name")}</th>
+                  <th className="px-3 py-2 font-medium">{t("dash.role")}</th>
+                  <th className="px-3 py-2 font-medium">{t("dash.contact")}</th>
+                  <th className="px-3 py-2 font-medium">{t("dash.created")}</th>
+                  <th className="px-3 py-2 font-medium text-right">{t("dash.activity")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {accounts.accounts.map((a) => (
+                  <tr key={a.id} className="border-b border-forest-300/40 last:border-0">
+                    <td className="px-3 py-2 text-forest-950">{a.fullName}</td>
+                    <td className="px-3 py-2">
+                      <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${roleBadge[a.role] ?? "bg-forest-300/40 text-forest-800"}`}>
+                        {t(`role.${a.role}`, a.role)}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 text-forest-800/80 font-mono text-xs">{a.phone || a.email || "—"}</td>
+                    <td className="px-3 py-2 text-forest-500 text-xs">{a.createdAt.slice(0, 10)}</td>
+                    <td className="px-3 py-2 text-right text-xs text-forest-500">
+                      {a.role === "seller"
+                        ? t("dash.actNorders", { n: a.ordersAsSeller })
+                        : t("dash.actNorders", { n: a.ordersAsBuyer })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Sales by category (FR-31) */}
+      {insights && insights.categories.length > 0 && (
+        <div className="receipt-stub bg-white border border-forest-300 p-4 mb-8">
+          <p className="text-xs text-forest-500 mb-2">{t("admin.byCategory")}</p>
+          {insights.categories.map((c) => (
+            <div key={c.category} className="flex justify-between text-sm py-0.5">
+              <span className="text-forest-800">{t("admin.avgPriceLine", { category: c.category, price: formatPrice(c.avgPrice) })}</span>
+              <span className="font-mono text-forest-950">{formatPrice(c.revenue)}</span>
             </div>
-          )}
-        </>
+          ))}
+        </div>
       )}
 
       {/* Seller payouts (FR-15 settlement) */}

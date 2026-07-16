@@ -241,6 +241,53 @@ export const getCorporateAnalytics = () =>
 export const getMarketInsights = () =>
   api.get<MarketInsights>("/admin/insights").then((r) => r.data);
 
+// ---- Dashboard analytics (seller graphs/calendar/Kanban) ----
+export interface DailyPoint { date: string; sales: number; transactions: number }
+export interface WeeklyPoint { week: string; sales: number; transactions: number }
+export interface SellerProductStat {
+  id: string;
+  name: string;
+  unit: string;
+  stock: number;
+  unitsSold: number;
+  revenue: number;
+}
+export interface SellerDashboard {
+  daily: DailyPoint[];
+  weekly: WeeklyPoint[];
+  products: SellerProductStat[];
+}
+export const getSellerDashboard = () =>
+  api.get<SellerDashboard>("/analytics/seller/dashboard").then((r) => r.data);
+
+// ---- Admin: accounts + platform progression ----
+export interface Account {
+  id: string;
+  fullName: string;
+  role: "individual_buyer" | "seller" | "corporate_buyer" | "admin" | "delivery_agent";
+  email: string | null;
+  phone: string | null;
+  createdAt: string;
+  ordersAsBuyer: number;
+  ordersAsSeller: number;
+  productCount: number;
+}
+export interface AccountsResponse {
+  total: number;
+  roleCounts: Record<string, number>;
+  accounts: Account[];
+}
+export const adminListAccounts = () =>
+  api.get<AccountsResponse>("/admin/accounts").then((r) => r.data);
+
+export interface Progression {
+  totals: { users: number; products: number; orders: number; gmv: number };
+  signups: { date: string; buyers: number; sellers: number }[];
+  orders: { date: string; orders: number; gmv: number }[];
+}
+export const adminGetProgression = () =>
+  api.get<Progression>("/admin/progression").then((r) => r.data);
+
 export interface SellerVerification {
   status: string;
   nationalIdUrl: string | null;
