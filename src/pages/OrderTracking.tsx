@@ -6,7 +6,7 @@ import { fetchOrder, createReview, getTracking, type TrackingState } from "../ap
 import type { Order } from "../types/order";
 import { formatPrice } from "../utils/format";
 import { apiError } from "../api/client";
-import { getSocket } from "../lib/socket";
+import { usePolling } from "../hooks/usePolling";
 import DeliveryTrackingMap from "../components/DeliveryTrackingMap";
 
 const STEPS: { key: string; labelKey: string; icon: typeof Package }[] = [
@@ -49,35 +49,28 @@ export default function OrderTracking() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  // Live delivery tracking (FR-33/35): fetch initial map state, then subscribe
-  // to the order room for real-time rider position + ETA updates.
+  // Delivery tracking (FR-33/35). The API is serverless, so there is no order
+  // room to subscribe to — poll the rider position + ETA while the order is out
+  // for delivery. Once it is delivered, refresh the order once and stop.
+  const trackingActive = !!id && order?.status === "out_for_delivery";
+  usePolling(
+    () => {
+      if (!id) return;
+      getTracking(id)
+        .then((next) => {
+          setTracking(next);
+          if (next.status === "delivered") load();
+        })
+        .catch(() => {});
+    },
+    5000,
+    trackingActive
+  );
+
+  // Fetch the map state once for an already-delivered order (no polling needed).
   useEffect(() => {
-    if (!id || !order) return;
-    if (order.status !== "out_for_delivery" && order.status !== "delivered") return;
-
+    if (!id || order?.status !== "delivered") return;
     getTracking(id).then(setTracking).catch(() => {});
-
-    const socket = getSocket();
-    socket.emit("tracking:join", id);
-    const onUpdate = (u: { lat?: number; lng?: number; etaMinutes?: number | null; status?: string }) => {
-      if (u.status === "delivered") {
-        load();
-        return;
-      }
-      if (typeof u.lat === "number" && typeof u.lng === "number") {
-        setTracking((prev) =>
-          prev
-            ? { ...prev, riderPosition: { lat: u.lat!, lng: u.lng! }, etaMinutes: u.etaMinutes ?? prev.etaMinutes }
-            : prev
-        );
-      }
-    };
-    socket.on("tracking:update", onUpdate);
-    return () => {
-      socket.emit("tracking:leave", id);
-      socket.off("tracking:update", onUpdate);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, order?.status]);
 
   if (loading) {

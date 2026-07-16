@@ -10,7 +10,7 @@ import {
   type Conversation,
   type Message,
 } from "../api/endpoints";
-import { getSocket } from "../lib/socket";
+import { usePolling } from "../hooks/usePolling";
 
 export default function Messages() {
   const { t } = useTranslation();
@@ -44,21 +44,28 @@ export default function Messages() {
     listMessages({ withUserId: selected.id }).then(setMessages).catch(() => setMessages([]));
   }, [selected]);
 
-  // Real-time: append incoming messages for the open thread; refresh list.
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    const socket = getSocket();
-    const onNew = (m: Message) => {
-      if (selected && (m.senderId === selected.id || m.receiverId === selected.id)) {
-        setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
-      }
+  // Near-real-time: the API is serverless, so there is no Socket.io push to
+  // subscribe to — poll the open thread and the conversation list instead.
+  // Reuse the previous array when nothing changed, otherwise its identity would
+  // change on every poll and re-fire the scroll-to-bottom effect below.
+  usePolling(
+    () => {
       loadConversations();
-    };
-    socket.on("message:new", onNew);
-    return () => {
-      socket.off("message:new", onNew);
-    };
-  }, [isAuthenticated, selected]);
+      if (!selected) return;
+      listMessages({ withUserId: selected.id })
+        .then((incoming) =>
+          setMessages((prev) =>
+            prev.length === incoming.length &&
+            prev[prev.length - 1]?.id === incoming[incoming.length - 1]?.id
+              ? prev
+              : incoming
+          )
+        )
+        .catch(() => {});
+    },
+    5000,
+    isAuthenticated
+  );
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });

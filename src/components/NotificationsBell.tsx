@@ -8,9 +8,10 @@ import {
   markAllNotificationsRead,
   type Notification,
 } from "../api/endpoints";
-import { getSocket } from "../lib/socket";
+import { usePolling } from "../hooks/usePolling";
 
-// Notification bell (FR-22): shows unread count, live-updates over Socket.io.
+// Notification bell (FR-22): shows unread count, refreshed by polling (the API
+// is deployed serverless, so there is no Socket.io push to subscribe to).
 export default function NotificationsBell() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -24,15 +25,7 @@ export default function NotificationsBell() {
     listNotifications().then(setItems).catch(() => {});
   };
 
-  useEffect(() => {
-    refresh();
-    const socket = getSocket();
-    const onNew = () => refresh();
-    socket.on("notification:new", onNew);
-    return () => {
-      socket.off("notification:new", onNew);
-    };
-  }, []);
+  usePolling(refresh, 15000);
 
   // Close on outside click.
   useEffect(() => {
