@@ -620,5 +620,27 @@
     "loginPrompt": "Connectez-vous pour accéder à votre tableau de bord.",
     "guardMsg": "Ce tableau de bord est réservé aux acheteurs.",
     "backToDashboard": "Retour au tableau de bord"
+  },
+  "sellerOps": {
+    "ordersNav": "Commandes",
+    "agentsNav": "Livreurs",
+    "ordersTitle": "Commandes",
+    "ordersSubtitle": "Faites avancer le statut et assignez un livreur.",
+    "agentsTitle": "Livreurs",
+    "agentsSubtitle": "Ajoutez et gérez les livreurs qui livrent vos commandes.",
+    "addAgent": "Ajouter un livreur",
+    "agentName": "Nom complet",
+    "agentPhone": "Téléphone (+237...)",
+    "noAgents": "Aucun livreur pour l'instant. Ajoutez-en un pour commencer à assigner des livraisons.",
+    "activeJobs": "{{count}} en cours",
+    "remove": "Retirer",
+    "confirmRemove": "Retirer {{name}} ?",
+    "noOrders": "Aucune commande pour l'instant.",
+    "thBuyer": "Acheteur",
+    "thAgent": "Livreur",
+    "assign": "Assigner un livreur",
+    "unassigned": "Non assigné",
+    "toOutForDelivery": "Marquer en livraison",
+    "toDelivered": "Marquer livrée"
   }
 }

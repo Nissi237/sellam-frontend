@@ -620,5 +620,27 @@
     "loginPrompt": "Log in to access your dashboard.",
     "guardMsg": "This dashboard is for buyers.",
     "backToDashboard": "Back to dashboard"
+  },
+  "sellerOps": {
+    "ordersNav": "Orders",
+    "agentsNav": "Delivery agents",
+    "ordersTitle": "Orders",
+    "ordersSubtitle": "Advance order status and assign a delivery agent.",
+    "agentsTitle": "Delivery agents",
+    "agentsSubtitle": "Add and manage the couriers who deliver your orders.",
+    "addAgent": "Add agent",
+    "agentName": "Full name",
+    "agentPhone": "Phone (+237...)",
+    "noAgents": "No delivery agents yet. Add one to start assigning deliveries.",
+    "activeJobs": "{{count}} active",
+    "remove": "Remove",
+    "confirmRemove": "Remove {{name}}?",
+    "noOrders": "No orders yet.",
+    "thBuyer": "Buyer",
+    "thAgent": "Agent",
+    "assign": "Assign agent",
+    "unassigned": "Unassigned",
+    "toOutForDelivery": "Mark out for delivery",
+    "toDelivered": "Mark delivered"
   }
 }

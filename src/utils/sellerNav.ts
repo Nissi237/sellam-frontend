@@ -1,6 +1,8 @@
 import {
   LayoutDashboard,
   Plus,
+  ClipboardList,
+  Bike,
   FileText,
   Receipt,
   Banknote,
@@ -17,6 +19,8 @@ export function buildSellerNav(t: TFunction): DashboardNavItem[] {
   return [
     { key: "overview", label: t("buyerDash.overview"), icon: LayoutDashboard, to: "/sell", end: true },
     { key: "new", label: t("seller.newListing"), icon: Plus, to: "/sell/new" },
+    { key: "orders", label: t("sellerOps.ordersNav"), icon: ClipboardList, to: "/sell/orders" },
+    { key: "agents", label: t("sellerOps.agentsNav"), icon: Bike, to: "/sell/agents" },
     { key: "rfqs", label: t("nav.rfqs"), icon: FileText, to: "/rfqs" },
     { key: "invoices", label: t("nav.invoices"), icon: Receipt, to: "/invoices" },
     { key: "financing", label: t("nav.financing"), icon: Banknote, to: "/financing" },

@@ -5,7 +5,6 @@ import { Bike, MapPin, Navigation, Play, CheckCircle2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import {
   fetchAvailableDeliveries,
-  claimDelivery,
   postLocation,
   markDelivered,
   type DeliveryJob,
@@ -58,11 +57,6 @@ export default function Deliver() {
       simTimer.current = null;
     }
     setSharingId(null);
-  };
-
-  const claim = async (id: string) => {
-    await claimDelivery(id);
-    load();
   };
 
   // FR-34: stream real GPS via the Geolocation API (throttled ~5s, NFR-13).
@@ -145,39 +139,30 @@ export default function Deliver() {
                 </div>
               </div>
 
-              {!job.mine ? (
+              <div className="flex flex-wrap gap-2">
                 <button
-                  onClick={() => claim(job.id)}
-                  className="bg-forest-800 text-cream px-4 py-2 rounded-md text-sm font-medium hover:bg-forest-950 transition"
+                  onClick={() => shareGps(job)}
+                  className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-sm transition ${
+                    sharingId === job.id
+                      ? "bg-leaf/20 text-leaf"
+                      : "border border-forest-300 text-forest-800 hover:bg-forest-300/20"
+                  }`}
                 >
-                  {t("deliver.accept")}
+                  <Navigation size={14} /> {t("deliver.shareLocation")}
                 </button>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => shareGps(job)}
-                    className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-sm transition ${
-                      sharingId === job.id
-                        ? "bg-leaf/20 text-leaf"
-                        : "border border-forest-300 text-forest-800 hover:bg-forest-300/20"
-                    }`}
-                  >
-                    <Navigation size={14} /> {t("deliver.shareLocation")}
-                  </button>
-                  <button
-                    onClick={() => simulate(job)}
-                    className="flex items-center gap-1 border border-forest-300 text-forest-800 px-3 py-1.5 rounded-md text-sm hover:bg-forest-300/20 transition"
-                  >
-                    <Play size={14} /> {t("deliver.simulate")}
-                  </button>
-                  <button
-                    onClick={() => complete(job.id)}
-                    className="flex items-center gap-1 bg-forest-800 text-cream px-3 py-1.5 rounded-md text-sm hover:bg-forest-950 transition"
-                  >
-                    <CheckCircle2 size={14} /> {t("deliver.markDelivered")}
-                  </button>
-                </div>
-              )}
+                <button
+                  onClick={() => simulate(job)}
+                  className="flex items-center gap-1 border border-forest-300 text-forest-800 px-3 py-1.5 rounded-md text-sm hover:bg-forest-300/20 transition"
+                >
+                  <Play size={14} /> {t("deliver.simulate")}
+                </button>
+                <button
+                  onClick={() => complete(job.id)}
+                  className="flex items-center gap-1 bg-forest-800 text-cream px-3 py-1.5 rounded-md text-sm hover:bg-forest-950 transition"
+                >
+                  <CheckCircle2 size={14} /> {t("deliver.markDelivered")}
+                </button>
+              </div>
             </div>
           ))}
         </div>
