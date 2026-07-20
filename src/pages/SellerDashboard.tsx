@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Plus, Pencil, Trash2, Eye, EyeOff, TrendingUp, Package, Megaphone, Percent, ShieldCheck, Wallet, RefreshCw, Receipt, Boxes, CalendarDays } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import NotificationsBell from "../components/NotificationsBell";
+import DashboardLayout from "../components/DashboardLayout";
+import { buildSellerNav } from "../utils/sellerNav";
 import { BarChart, CHART_COLORS } from "../components/charts";
 import Kanban, { type KanbanColumn } from "../components/Kanban";
 import MiniCalendar from "../components/MiniCalendar";
@@ -69,10 +70,16 @@ export default function SellerDashboard() {
   };
 
   useEffect(() => {
-    if (isAuthenticated && user?.role === "seller") {
+    // Wrapped so no setState runs synchronously in the effect body.
+    const run = async () => {
+      if (!(isAuthenticated && user?.role === "seller")) {
+        setLoading(false);
+        return;
+      }
       load();
       loadMeta();
-    } else setLoading(false);
+    };
+    run();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, user?.role]);
 
@@ -203,21 +210,18 @@ export default function SellerDashboard() {
     </div>
   );
 
-  return (
-    <section className="max-w-5xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="font-display text-2xl text-forest-950">{t("seller.dashboardTitle")}</h1>
-        <div className="flex items-center gap-2">
-          <NotificationsBell />
-          <Link
-            to="/sell/new"
-            className="flex items-center gap-1 bg-forest-800 text-cream px-4 py-2 rounded-md text-sm font-medium hover:bg-forest-950 transition"
-          >
-            <Plus size={16} /> {t("seller.newListing")}
-          </Link>
-        </div>
-      </div>
+  const newListingBtn = (
+    <Link
+      to="/sell/new"
+      className="flex items-center gap-1 bg-forest-800 text-cream px-3 py-1.5 rounded-md text-sm font-medium hover:bg-forest-950 transition"
+    >
+      <Plus size={16} /> <span className="hidden sm:inline">{t("seller.newListing")}</span>
+    </Link>
+  );
 
+  return (
+    <DashboardLayout title={t("seller.dashboardTitle")} nav={buildSellerNav(t)} actions={newListingBtn}>
+      <div className="max-w-5xl mx-auto">
       {/* KPI cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         <div className="receipt-stub bg-white border border-forest-300 p-4">
@@ -445,6 +449,7 @@ export default function SellerDashboard() {
           ))}
         </div>
       )}
-    </section>
+      </div>
+    </DashboardLayout>
   );
 }

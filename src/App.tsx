@@ -38,9 +38,10 @@ export default function App() {
         <OrderProvider>
           <BrowserRouter>
             <Routes>
-              {/* Buyer dashboards render in their own sidebar shell (no top-nav Layout). */}
+              {/* Dashboards render in their own sidebar shell (no top-nav Layout). */}
               <Route path="/dashboard" element={<BuyerDashboard />} />
               <Route path="/dashboard/orders" element={<BuyerOrders />} />
+              <Route path="/sell" element={<SellerDashboard />} />
 
               {/* Everything else uses the marketplace Layout (header + footer). */}
               <Route
@@ -56,7 +57,6 @@ export default function App() {
                       <Route path="/login" element={<Login />} />
                       <Route path="/product/:id" element={<ProductDetail />} />
                       <Route path="/cart" element={<Cart />} />
-                      <Route path="/sell" element={<SellerDashboard />} />
                       <Route path="/sell/new" element={<ListingForm />} />
                       <Route path="/sell/edit/:id" element={<ListingForm />} />
                       <Route path="/checkout" element={<Checkout />} />

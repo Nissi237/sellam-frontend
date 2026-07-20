@@ -24,10 +24,13 @@ export default function DashboardLayout({
   title,
   nav,
   children,
+  actions,
 }: {
   title: string;
   nav: DashboardNavItem[];
   children: ReactNode;
+  /** Optional top-bar controls (e.g. the seller's "New listing" button). */
+  actions?: ReactNode;
 }) {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
@@ -145,6 +148,7 @@ export default function DashboardLayout({
               </p>
             )}
           </div>
+          {actions}
           <NotificationsBell />
           <LanguageSwitcher />
         </header>
