@@ -46,6 +46,12 @@ export default function App() {
               <Route path="/sell" element={<SellerDashboard />} />
               <Route path="/sell/orders" element={<SellerOrders />} />
               <Route path="/sell/agents" element={<SellerAgents />} />
+              {/* Admin console — sidebar shell, one route per section. */}
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/admin/accounts" element={<Admin />} />
+              <Route path="/admin/moderation" element={<Admin />} />
+              <Route path="/admin/payouts" element={<Admin />} />
+              <Route path="/admin/insights" element={<Admin />} />
 
               {/* Everything else uses the marketplace Layout (header + footer). */}
               <Route
@@ -75,7 +81,6 @@ export default function App() {
                       <Route path="/subscription" element={<Subscription />} />
                       <Route path="/financing" element={<Financing />} />
                       <Route path="/admin/login" element={<AdminLogin />} />
-                      <Route path="/admin" element={<Admin />} />
                     </Routes>
                   </Layout>
                 }
