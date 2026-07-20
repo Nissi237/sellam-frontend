@@ -123,7 +123,7 @@ export default function ListingForm() {
       qualityGrade: qualityGrade || undefined,
       harvestDate: harvestDate || undefined,
       bulkPriceTiers: bulkTiers.filter((t) => t.minQuantity > 0 && t.price > 0),
-      photoUrl: photoUrl || "https://images.unsplash.com/photo-1542838132-92c53300491e?w=400",
+      photoUrl: photoUrl || "",
       videoUrl: videoUrl || undefined,
       ownershipProofUrl: ownershipProofUrl || undefined,
       description,
