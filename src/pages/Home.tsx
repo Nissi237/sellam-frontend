@@ -5,19 +5,26 @@ import { ShieldCheck, Smartphone, Truck, ArrowRight } from "lucide-react";
 import ProductCard from "../components/ProductCard";
 import { fetchProducts } from "../api/endpoints";
 import type { Product } from "../types/product";
+import heroImg from "../assets/home/hero-market-fabrics.jpg";
+import produceImg from "../assets/home/category-produce.jpg";
+import groceriesImg from "../assets/home/category-groceries.jpg";
+import textilesImg from "../assets/home/category-textiles.jpg";
+import promoRice from "../assets/home/promo-rice.jpg";
+import promoFish from "../assets/home/promo-fish.jpg";
+import promoPlantains from "../assets/home/promo-plantains.jpg";
+import fallbackImg from "../assets/home/fallback-produce.jpg";
 
-// Confirmed-good market/food imagery (Unsplash). FALLBACK guarantees every
-// tile shows a real, relevant photo even if a remote image fails to load.
-const FALLBACK =
-  "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=80&auto=format&fit=crop";
+// Real Douala/West-African market photography, bundled locally. FALLBACK
+// guarantees every tile shows a relevant photo even if an image fails to load.
+const FALLBACK = fallbackImg;
 const IMG = {
-  hero: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=900&q=80&auto=format&fit=crop",
-  produce: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600&q=80&auto=format&fit=crop",
-  groceries: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&q=80&auto=format&fit=crop",
-  textiles: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=600&q=80&auto=format&fit=crop",
-  promo1: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=500&q=80&auto=format&fit=crop",
-  promo2: "https://images.unsplash.com/photo-1603052875302-d376b7c0638a?w=500&q=80&auto=format&fit=crop",
-  promo3: "https://images.unsplash.com/photo-1533900298318-6b8da08a523e?w=500&q=80&auto=format&fit=crop",
+  hero: heroImg,
+  produce: produceImg,
+  groceries: groceriesImg,
+  textiles: textilesImg,
+  promo1: promoFish,
+  promo2: promoRice,
+  promo3: promoPlantains,
 };
 
 /** Swap a broken remote image for a known-good relevant photo. */
