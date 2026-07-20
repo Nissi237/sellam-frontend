@@ -31,12 +31,13 @@ export default function Account() {
   }
 
   const isBuyer = user.role === "individual_buyer" || user.role === "corporate_buyer";
+  const dashboardPath = isBuyer ? "/dashboard" : user.role === "seller" ? "/sell" : null;
 
   return (
     <section className="max-w-md mx-auto px-4 py-10">
-      {isBuyer && (
+      {dashboardPath && (
         <Link
-          to="/dashboard"
+          to={dashboardPath}
           className="flex items-center gap-1 text-sm text-forest-800 hover:text-forest-950 transition mb-4"
         >
           <LayoutDashboard size={16} /> {t("buyerDash.backToDashboard")}

@@ -449,6 +449,25 @@ export const markDelivered = (orderId: string) => api.post(`/delivery/${orderId}
 export const getTracking = (orderId: string) =>
   api.get<TrackingState>(`/delivery/${orderId}/tracking`).then((r) => r.data);
 
+// -------- Seller-managed delivery agents --------
+export interface SellerDeliveryAgent {
+  id: string;
+  fullName: string;
+  phone: string;
+  activeJobs: number;
+}
+export const listDeliveryAgents = () =>
+  api.get<{ agents: SellerDeliveryAgent[] }>("/sellers/me/delivery-agents").then((r) => r.data.agents);
+export const createDeliveryAgent = (fullName: string, phone: string) =>
+  api
+    .post<{ agent: SellerDeliveryAgent }>("/sellers/me/delivery-agents", { fullName, phone })
+    .then((r) => r.data.agent);
+export const deleteDeliveryAgent = (id: string) =>
+  api.delete(`/sellers/me/delivery-agents/${id}`);
+// Seller assigns one of their agents to their own order.
+export const assignDeliveryAgent = (orderId: string, agentId: string) =>
+  api.post<{ order: Order }>(`/orders/${orderId}/assign-agent`, { agentId }).then((r) => r.data.order);
+
 // -------- Marketing: promotions, sponsored (FR-20/30) --------
 export interface Promotion {
   id: string;

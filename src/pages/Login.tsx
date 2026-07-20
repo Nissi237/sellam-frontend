@@ -14,7 +14,9 @@ export default function Login() {
 
   const [mode, setMode] = useState<AuthMode>("login");
   const [method, setMethod] = useState<AuthMethod>("phone");
-  const [role, setRole] = useState<UserRole | "delivery_agent">("individual_buyer");
+  // Delivery agents are created by a seller, not self-registered — so no such
+  // option here.
+  const [role, setRole] = useState<UserRole>("individual_buyer");
 
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -91,10 +93,16 @@ export default function Login() {
 
       setAuth(result.token, result.user);
       setSuccess(mode === "register" ? t("auth.successRegister") : t("auth.successLogin"));
-      // Buyers land on their dashboard; other roles keep the marketplace home.
-      const isBuyer =
-        result.user.role === "individual_buyer" || result.user.role === "corporate_buyer";
-      setTimeout(() => navigate(isBuyer ? "/dashboard" : "/"), 800);
+      // Route each role to its control center; everyone else to the marketplace home.
+      const dest =
+        result.user.role === "individual_buyer" || result.user.role === "corporate_buyer"
+          ? "/dashboard"
+          : result.user.role === "seller"
+          ? "/sell"
+          : result.user.role === "delivery_agent"
+          ? "/deliver"
+          : "/";
+      setTimeout(() => navigate(dest), 800);
     } catch (err) {
       setError(apiError(err));
     } finally {
@@ -134,13 +142,12 @@ export default function Login() {
               </label>
               <select
                 value={role}
-                onChange={(e) => setRole(e.target.value as UserRole | "delivery_agent")}
+                onChange={(e) => setRole(e.target.value as UserRole)}
                 className={inputClass}
               >
                 <option value="individual_buyer">{t("auth.roleIndividualBuyer")}</option>
                 <option value="seller">{t("auth.roleSeller")}</option>
                 <option value="corporate_buyer">{t("auth.roleCorporateBuyer")}</option>
-                <option value="delivery_agent">{t("auth.roleDeliveryAgent")}</option>
               </select>
             </div>
           )}

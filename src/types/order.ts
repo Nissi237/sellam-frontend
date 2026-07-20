@@ -26,6 +26,8 @@ export interface Order {
   deliveryMode: "delivery" | "pickup";
   deliveryAddress?: string | null;
   estimatedWindow?: string;
+  deliveryAgentId?: string | null;
+  agentName?: string | null;
   createdAt: string;
   paymentProvider?: string | null;
   paymentStatus?: string | null;
