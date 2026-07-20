@@ -198,6 +198,11 @@
     "invalid": "Identifiants administrateur invalides."
   },
   "admin": {
+    "navOverview": "Aperçu",
+    "navAccounts": "Comptes",
+    "navModeration": "Modération",
+    "navPayouts": "Versements",
+    "navInsights": "Analyses",
     "accessRestricted": "Accès réservé aux administrateurs.",
     "portalLink": "Portail administrateur",
     "consoleTitle": "Console de modération",

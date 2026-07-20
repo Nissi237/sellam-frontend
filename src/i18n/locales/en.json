@@ -198,6 +198,11 @@
     "invalid": "Invalid admin credentials."
   },
   "admin": {
+    "navOverview": "Overview",
+    "navAccounts": "Accounts",
+    "navModeration": "Moderation",
+    "navPayouts": "Payouts",
+    "navInsights": "Insights",
     "accessRestricted": "Admins only.",
     "portalLink": "Admin portal",
     "consoleTitle": "Moderation console",

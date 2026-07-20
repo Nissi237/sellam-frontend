@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ShieldAlert, FileCheck, Copy, Star, BarChart3, UserCheck, Wallet, RefreshCw, Users, Package, ShoppingBag, Coins, CalendarDays, Table as TableIcon, Activity, Ban, RotateCcw, Trash2, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { formatPrice } from "../utils/format";
-import NotificationsBell from "../components/NotificationsBell";
+import DashboardLayout from "../components/DashboardLayout";
+import { buildAdminNav } from "../utils/adminNav";
 import { LineChart, BarChart, CHART_COLORS } from "../components/charts";
 import Kanban, { type KanbanColumn } from "../components/Kanban";
 import MiniCalendar from "../components/MiniCalendar";
@@ -39,9 +40,21 @@ import {
   type AccountActivity,
 } from "../api/endpoints";
 
+type AdminSection = "overview" | "accounts" | "moderation" | "payouts" | "insights";
+
 export default function Admin() {
   const { t } = useTranslation();
   const { user, isAuthenticated } = useAuth();
+  const { pathname } = useLocation();
+  const section: AdminSection = pathname.endsWith("/accounts")
+    ? "accounts"
+    : pathname.endsWith("/moderation")
+    ? "moderation"
+    : pathname.endsWith("/payouts")
+    ? "payouts"
+    : pathname.endsWith("/insights")
+    ? "insights"
+    : "overview";
   const [reviews, setReviews] = useState<FlaggedReview[]>([]);
   const [docs, setDocs] = useState<OriginDoc[]>([]);
   const [dups, setDups] = useState<DuplicateFlag[]>([]);
@@ -202,13 +215,10 @@ export default function Admin() {
   };
 
   return (
-    <section className="max-w-5xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-1">
-        <h1 className="font-display text-2xl text-forest-950 flex items-center gap-2">
-          <ShieldAlert size={22} /> {t("admin.consoleTitle")}
-        </h1>
-        <NotificationsBell />
-      </div>
+    <DashboardLayout title={t("admin.consoleTitle")} nav={buildAdminNav(t)}>
+      <div className="max-w-5xl mx-auto">
+      {section === "overview" && (
+      <>
       <p className="text-xs text-forest-500 mb-6">{t("admin.consoleSubtitle")}</p>
 
       {/* Platform KPIs */}
@@ -276,8 +286,11 @@ export default function Admin() {
         </div>
       </div>
 
+      </>
+      )}
+
       {/* All accounts */}
-      {accounts && (
+      {section === "accounts" && accounts && (
         <div className="mb-8">
           <h2 className="font-body font-semibold text-forest-800 mb-3 flex items-center gap-1">
             <TableIcon size={16} /> {t("dash.accountsTitle", { count: accounts.total })}
@@ -358,21 +371,33 @@ export default function Admin() {
         </div>
       )}
 
-      {/* Sales by category (FR-31) */}
-      {insights && insights.categories.length > 0 && (
-        <div className="receipt-stub bg-white border border-forest-300 p-4 mb-8">
-          <p className="text-xs text-forest-500 mb-2">{t("admin.byCategory")}</p>
-          {insights.categories.map((c) => (
-            <div key={c.category} className="flex justify-between text-sm py-0.5">
-              <span className="text-forest-800">{t("admin.avgPriceLine", { category: c.category, price: formatPrice(c.avgPrice) })}</span>
-              <span className="font-mono text-forest-950">{formatPrice(c.revenue)}</span>
+      {/* Insights: platform totals + sales by category (FR-31) */}
+      {section === "insights" && (
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+            <div className={card}><p className="flex items-center gap-1 text-xs text-forest-500 mb-1"><Coins size={14} /> {t("dash.gmvTotal")}</p><p className="font-mono text-xl text-forest-950">{formatPrice(insights?.totalGMV ?? 0)}</p></div>
+            <div className={card}><p className="flex items-center gap-1 text-xs text-forest-500 mb-1"><ShoppingBag size={14} /> {t("dash.totalOrders")}</p><p className="font-mono text-xl text-forest-950">{insights?.orderCount ?? 0}</p></div>
+            <div className={card}><p className="flex items-center gap-1 text-xs text-forest-500 mb-1"><UserCheck size={14} /> {t("dash.sellers")}</p><p className="font-mono text-xl text-forest-950">{insights?.activeSellers ?? 0}</p></div>
+            <div className={card}><p className="flex items-center gap-1 text-xs text-forest-500 mb-1"><Users size={14} /> {t("dash.buyers")}</p><p className="font-mono text-xl text-forest-950">{insights?.activeBuyers ?? 0}</p></div>
+          </div>
+          {insights && insights.categories.length > 0 ? (
+            <div className="receipt-stub bg-white border border-forest-300 p-4 mb-8">
+              <p className="text-xs text-forest-500 mb-2">{t("admin.byCategory")}</p>
+              {insights.categories.map((c) => (
+                <div key={c.category} className="flex justify-between text-sm py-0.5">
+                  <span className="text-forest-800">{t("admin.avgPriceLine", { category: c.category, price: formatPrice(c.avgPrice) })}</span>
+                  <span className="font-mono text-forest-950">{formatPrice(c.revenue)}</span>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          ) : (
+            <p className="text-sm text-forest-500 py-8 text-center">{t("browse.empty")}</p>
+          )}
+        </>
       )}
 
       {/* Seller payouts (FR-15 settlement) */}
-      {payoutSummary && (
+      {section === "payouts" && payoutSummary && (
         <>
           <h2 className="font-body font-semibold text-forest-800 mb-2 flex items-center gap-1">
             <Wallet size={16} /> {t("admin.payoutsTitle")}
@@ -437,6 +462,8 @@ export default function Admin() {
         </>
       )}
 
+      {section === "moderation" && (
+      <>
       {/* Seller verification (FR-2/23) */}
       <h2 className="font-body font-semibold text-forest-800 mb-2 flex items-center gap-1">
         <UserCheck size={16} /> {t("admin.verifTitle", { count: sellers.length })}
@@ -532,6 +559,8 @@ export default function Admin() {
           </div>
         ))}
       </div>
+      </>
+      )}
 
       {/* Account activity modal (sales + transactions, no personal payment info) */}
       {activity && (
@@ -600,6 +629,7 @@ export default function Admin() {
           </div>
         </div>
       )}
-    </section>
+      </div>
+    </DashboardLayout>
   );
 }
