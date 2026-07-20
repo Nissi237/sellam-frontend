@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ShieldAlert, FileCheck, Copy, Star, BarChart3, UserCheck, Wallet, RefreshCw, Users, Package, ShoppingBag, Coins, CalendarDays, Table as TableIcon } from "lucide-react";
+import { ShieldAlert, FileCheck, Copy, Star, BarChart3, UserCheck, Wallet, RefreshCw, Users, Package, ShoppingBag, Coins, CalendarDays, Table as TableIcon, Activity, Ban, RotateCcw, Trash2, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { formatPrice } from "../utils/format";
 import NotificationsBell from "../components/NotificationsBell";
@@ -21,6 +21,10 @@ import {
   adminListPayouts,
   adminListAccounts,
   adminGetProgression,
+  adminGetAccountActivity,
+  adminSuspendAccount,
+  adminReinstateAccount,
+  adminDeleteAccount,
   retryPayout,
   type FlaggedReview,
   type OriginDoc,
@@ -31,6 +35,8 @@ import {
   type PayoutSummary,
   type AccountsResponse,
   type Progression,
+  type Account,
+  type AccountActivity,
 } from "../api/endpoints";
 
 export default function Admin() {
@@ -46,6 +52,8 @@ export default function Admin() {
   const [accounts, setAccounts] = useState<AccountsResponse | null>(null);
   const [progression, setProgression] = useState<Progression | null>(null);
   const [retrying, setRetrying] = useState<string | null>(null);
+  const [acctBusy, setAcctBusy] = useState<string | null>(null);
+  const [activity, setActivity] = useState<AccountActivity | null>(null);
 
   const loadPayouts = () =>
     adminListPayouts()
@@ -75,6 +83,51 @@ export default function Admin() {
       /* status stays as-is */
     } finally {
       setRetrying(null);
+    }
+  };
+
+  // ---- Account control ----
+  const viewActivity = async (a: Account) => {
+    setAcctBusy(a.id);
+    try {
+      setActivity(await adminGetAccountActivity(a.id));
+    } catch {
+      /* ignore */
+    } finally {
+      setAcctBusy(null);
+    }
+  };
+
+  const suspend = async (a: Account) => {
+    const reason = prompt(t("adminAcct.suspendReason"), "");
+    if (reason === null) return;
+    setAcctBusy(a.id);
+    try {
+      await adminSuspendAccount(a.id, reason);
+      adminListAccounts().then(setAccounts).catch(() => {});
+    } finally {
+      setAcctBusy(null);
+    }
+  };
+
+  const reinstate = async (a: Account) => {
+    setAcctBusy(a.id);
+    try {
+      await adminReinstateAccount(a.id);
+      adminListAccounts().then(setAccounts).catch(() => {});
+    } finally {
+      setAcctBusy(null);
+    }
+  };
+
+  const removeAccount = async (a: Account) => {
+    if (!confirm(t("adminAcct.confirmDelete", { name: a.fullName }))) return;
+    setAcctBusy(a.id);
+    try {
+      await adminDeleteAccount(a.id);
+      adminListAccounts().then(setAccounts).catch(() => {});
+    } finally {
+      setAcctBusy(null);
     }
   };
 
@@ -235,29 +288,70 @@ export default function Admin() {
                 <tr className="text-left text-[11px] text-forest-500 border-b border-forest-300">
                   <th className="px-3 py-2 font-medium">{t("dash.name")}</th>
                   <th className="px-3 py-2 font-medium">{t("dash.role")}</th>
+                  <th className="px-3 py-2 font-medium">{t("adminAcct.status")}</th>
                   <th className="px-3 py-2 font-medium">{t("dash.contact")}</th>
-                  <th className="px-3 py-2 font-medium">{t("dash.created")}</th>
                   <th className="px-3 py-2 font-medium text-right">{t("dash.activity")}</th>
+                  <th className="px-3 py-2 font-medium text-right">{t("adminAcct.actions")}</th>
                 </tr>
               </thead>
               <tbody>
-                {accounts.accounts.map((a) => (
-                  <tr key={a.id} className="border-b border-forest-300/40 last:border-0">
-                    <td className="px-3 py-2 text-forest-950">{a.fullName}</td>
-                    <td className="px-3 py-2">
-                      <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${roleBadge[a.role] ?? "bg-forest-300/40 text-forest-800"}`}>
-                        {t(`role.${a.role}`, a.role)}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2 text-forest-800/80 font-mono text-xs">{a.phone || a.email || "—"}</td>
-                    <td className="px-3 py-2 text-forest-500 text-xs">{a.createdAt.slice(0, 10)}</td>
-                    <td className="px-3 py-2 text-right text-xs text-forest-500">
-                      {a.role === "seller"
-                        ? t("dash.actNorders", { n: a.ordersAsSeller })
-                        : t("dash.actNorders", { n: a.ordersAsBuyer })}
-                    </td>
-                  </tr>
-                ))}
+                {accounts.accounts.map((a) => {
+                  const suspended = a.status === "suspended";
+                  const isAdmin = a.role === "admin";
+                  const isSelf = a.id === user?.id;
+                  return (
+                    <tr key={a.id} className="border-b border-forest-300/40 last:border-0">
+                      <td className="px-3 py-2 text-forest-950">{a.fullName}</td>
+                      <td className="px-3 py-2">
+                        <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${roleBadge[a.role] ?? "bg-forest-300/40 text-forest-800"}`}>
+                          {t(`role.${a.role}`, a.role)}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2">
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded ${suspended ? "bg-clay/15 text-clay" : "bg-leaf/15 text-leaf"}`}>
+                          {t(suspended ? "adminAcct.suspended" : "adminAcct.active")}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 text-forest-800/80 font-mono text-xs">{a.phone || a.email || "—"}</td>
+                      <td className="px-3 py-2 text-right text-xs text-forest-500">
+                        {a.role === "seller"
+                          ? t("dash.actNorders", { n: a.ordersAsSeller })
+                          : t("dash.actNorders", { n: a.ordersAsBuyer })}
+                      </td>
+                      <td className="px-3 py-2">
+                        <div className="flex items-center justify-end gap-1">
+                          <button onClick={() => viewActivity(a)} disabled={acctBusy === a.id}
+                            title={t("adminAcct.viewActivity")}
+                            className="p-1.5 text-forest-800 hover:bg-forest-300/20 rounded disabled:opacity-50">
+                            <Activity size={15} />
+                          </button>
+                          {!isAdmin && !isSelf && (
+                            <>
+                              {suspended ? (
+                                <button onClick={() => reinstate(a)} disabled={acctBusy === a.id}
+                                  title={t("adminAcct.reinstate")}
+                                  className="p-1.5 text-leaf hover:bg-leaf/10 rounded disabled:opacity-50">
+                                  <RotateCcw size={15} />
+                                </button>
+                              ) : (
+                                <button onClick={() => suspend(a)} disabled={acctBusy === a.id}
+                                  title={t("adminAcct.suspend")}
+                                  className="p-1.5 text-clay hover:bg-clay/10 rounded disabled:opacity-50">
+                                  <Ban size={15} />
+                                </button>
+                              )}
+                              <button onClick={() => removeAccount(a)} disabled={acctBusy === a.id}
+                                title={t("adminAcct.delete")}
+                                className="p-1.5 text-clay hover:bg-clay/10 rounded disabled:opacity-50">
+                                <Trash2 size={15} />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -438,6 +532,74 @@ export default function Admin() {
           </div>
         ))}
       </div>
+
+      {/* Account activity modal (sales + transactions, no personal payment info) */}
+      {activity && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog">
+          <div className="absolute inset-0 bg-forest-950/50" onClick={() => setActivity(null)} />
+          <div className="relative bg-white receipt-stub border border-forest-300 w-full max-w-2xl max-h-[85vh] overflow-y-auto p-5">
+            <div className="flex items-start justify-between mb-1">
+              <h3 className="font-display text-lg text-forest-950">
+                {t("adminAcct.activityTitle", { name: activity.account.fullName })}
+              </h3>
+              <button onClick={() => setActivity(null)} className="p-1 text-forest-800 hover:bg-forest-300/20 rounded" title={t("adminAcct.close")}>
+                <X size={18} />
+              </button>
+            </div>
+            <p className="text-[11px] text-forest-500 mb-4">{t("adminAcct.privacyNote")}</p>
+
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <div className="receipt-stub bg-cream/50 border border-forest-300 p-3">
+                <p className="text-xs text-forest-500">{t("adminAcct.salesTotal")}</p>
+                <p className="font-mono text-lg text-forest-950">{formatPrice(activity.summary.salesTotal)}</p>
+                <p className="text-[11px] text-forest-500">{t("adminAcct.salesOrders", { n: activity.summary.salesOrders })}</p>
+              </div>
+              <div className="receipt-stub bg-cream/50 border border-forest-300 p-3">
+                <p className="text-xs text-forest-500">{t("adminAcct.purchaseTotal")}</p>
+                <p className="font-mono text-lg text-forest-950">{formatPrice(activity.summary.purchaseTotal)}</p>
+                <p className="text-[11px] text-forest-500">{t("adminAcct.purchaseOrders", { n: activity.summary.purchaseOrders })}</p>
+              </div>
+            </div>
+
+            {activity.transactions.length === 0 ? (
+              <p className="text-sm text-forest-500 py-4 text-center">{t("adminAcct.noTxns")}</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="text-left text-[11px] text-forest-500 border-b border-forest-300">
+                      <th className="px-2 py-1.5 font-medium">{t("adminAcct.thWhen")}</th>
+                      <th className="px-2 py-1.5 font-medium">{t("adminAcct.thSide")}</th>
+                      <th className="px-2 py-1.5 font-medium">{t("adminAcct.thCounterparty")}</th>
+                      <th className="px-2 py-1.5 font-medium text-right">{t("adminAcct.thAmount")}</th>
+                      <th className="px-2 py-1.5 font-medium">{t("adminAcct.thStatus")}</th>
+                      <th className="px-2 py-1.5 font-medium">{t("adminAcct.thPayment")}</th>
+                      <th className="px-2 py-1.5 font-medium">{t("adminAcct.thRef")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {activity.transactions.map((x) => (
+                      <tr key={x.orderId} className="border-b border-forest-300/40 last:border-0">
+                        <td className="px-2 py-1.5 text-forest-500 whitespace-nowrap">{x.createdAt.slice(0, 10)}</td>
+                        <td className="px-2 py-1.5">
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded ${x.side === "seller" ? "bg-leaf/15 text-leaf" : "bg-forest-300/40 text-forest-800"}`}>
+                            {t(x.side === "seller" ? "adminAcct.sideSeller" : "adminAcct.sideBuyer")}
+                          </span>
+                        </td>
+                        <td className="px-2 py-1.5 text-forest-800 truncate max-w-[120px]">{x.counterparty}</td>
+                        <td className="px-2 py-1.5 text-right font-mono text-forest-950 whitespace-nowrap">{formatPrice(x.amount)}</td>
+                        <td className="px-2 py-1.5 text-forest-800">{x.status}</td>
+                        <td className="px-2 py-1.5 text-forest-500">{x.paymentProvider ?? "—"}{x.paymentStatus ? ` · ${x.paymentStatus}` : ""}</td>
+                        <td className="px-2 py-1.5 font-mono text-[10px] text-forest-500">{x.transactionRef ?? "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </section>
   );
 }

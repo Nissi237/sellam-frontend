@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Minus, Plus, Trash2, ArrowLeft } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { formatPrice } from "../utils/format";
+import { productImage, hasUsablePhoto } from "../utils/productImage";
 
 export default function Cart() {
   const { t } = useTranslation();
@@ -38,7 +39,7 @@ export default function Cart() {
             className="receipt-stub bg-white border border-forest-300 shadow-sm p-4 flex items-center gap-4"
           >
             <img
-              src={product.photoUrl}
+              src={hasUsablePhoto(product.photoUrl) ? product.photoUrl : productImage(product.name, product.category, product.id)}
               alt={product.name}
               className="w-16 h-16 object-cover rounded"
             />

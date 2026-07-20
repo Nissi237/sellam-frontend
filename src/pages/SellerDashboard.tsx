@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import DashboardLayout from "../components/DashboardLayout";
 import { buildSellerNav } from "../utils/sellerNav";
 import { BarChart, CHART_COLORS } from "../components/charts";
+import { productImage, hasUsablePhoto } from "../utils/productImage";
 import Kanban, { type KanbanColumn } from "../components/Kanban";
 import MiniCalendar from "../components/MiniCalendar";
 import {
@@ -386,7 +387,7 @@ export default function SellerDashboard() {
               }`}
             >
               <img
-                src={listing.photoUrl}
+                src={hasUsablePhoto(listing.photoUrl) ? listing.photoUrl : productImage(listing.name, listing.category, listing.id)}
                 alt={listing.name}
                 className="w-16 h-16 object-cover rounded"
               />
