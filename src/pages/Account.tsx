@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { LogOut, Smartphone, User as UserIcon, Gift, Star } from "lucide-react";
+import { LogOut, Smartphone, User as UserIcon, Gift, Star, LayoutDashboard } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import MomoAccounts from "../components/MomoAccounts";
 import { getLoyalty, getReferral, type Loyalty } from "../api/endpoints";
@@ -30,8 +30,18 @@ export default function Account() {
     );
   }
 
+  const isBuyer = user.role === "individual_buyer" || user.role === "corporate_buyer";
+
   return (
     <section className="max-w-md mx-auto px-4 py-10">
+      {isBuyer && (
+        <Link
+          to="/dashboard"
+          className="flex items-center gap-1 text-sm text-forest-800 hover:text-forest-950 transition mb-4"
+        >
+          <LayoutDashboard size={16} /> {t("buyerDash.backToDashboard")}
+        </Link>
+      )}
       <div className="receipt-stub bg-white border border-forest-300 shadow-sm p-6 mb-6">
         <div className="flex items-center gap-3 mb-2">
           <UserIcon size={22} className="text-forest-800" />
