@@ -267,6 +267,7 @@ export interface Account {
   role: "individual_buyer" | "seller" | "corporate_buyer" | "admin" | "delivery_agent";
   email: string | null;
   phone: string | null;
+  status: "active" | "suspended";
   createdAt: string;
   ordersAsBuyer: number;
   ordersAsSeller: number;
@@ -279,6 +280,33 @@ export interface AccountsResponse {
 }
 export const adminListAccounts = () =>
   api.get<AccountsResponse>("/admin/accounts").then((r) => r.data);
+
+// ---- Admin: account control (verify activity, suspend, delete) ----
+export interface AccountTxn {
+  orderId: string;
+  side: "buyer" | "seller";
+  type: string;
+  status: string;
+  amount: number;
+  counterparty: string;
+  paymentProvider: string | null; // provider only — no personal Mobile Money number
+  paymentStatus: string | null;
+  transactionRef: string | null;
+  createdAt: string;
+}
+export interface AccountActivity {
+  account: { id: string; fullName: string; role: string; status: string };
+  summary: { salesTotal: number; salesOrders: number; purchaseTotal: number; purchaseOrders: number };
+  transactions: AccountTxn[];
+}
+export const adminGetAccountActivity = (id: string) =>
+  api.get<AccountActivity>(`/admin/accounts/${id}/activity`).then((r) => r.data);
+export const adminSuspendAccount = (id: string, reason: string) =>
+  api.post(`/admin/accounts/${id}/suspend`, { reason });
+export const adminReinstateAccount = (id: string) =>
+  api.post(`/admin/accounts/${id}/reinstate`);
+export const adminDeleteAccount = (id: string) =>
+  api.delete(`/admin/accounts/${id}`);
 
 export interface Progression {
   totals: { users: number; products: number; orders: number; gmv: number };
