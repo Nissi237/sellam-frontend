@@ -1,7 +1,7 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingBasket, ShoppingCart, User as UserIcon, Search } from "lucide-react";
+import { ShoppingBasket, ShoppingCart, User as UserIcon, Search, LayoutDashboard } from "lucide-react";
 import LanguageSwitcher from "./LanguageSwitcher";
 import NotificationsBell from "./NotificationsBell";
 import { useCart } from "../context/CartContext";
@@ -53,6 +53,12 @@ export default function Layout({ children }: { children: ReactNode }) {
 
           <div className="flex items-center gap-4 text-cream shrink-0">
             {isAuthenticated && <NotificationsBell />}
+            {isAuthenticated &&
+              (user?.role === "individual_buyer" || user?.role === "corporate_buyer") && (
+                <Link to="/dashboard" className="flex items-center gap-1 text-sm hover:text-forest-300 transition" title={t("buyerDash.title")}>
+                  <LayoutDashboard size={16} /> <span className="hidden sm:inline">{t("buyerDash.title")}</span>
+                </Link>
+              )}
             {isAuthenticated ? (
               <Link to="/account" className="flex items-center gap-1 text-sm hover:text-forest-300 transition">
                 <UserIcon size={16} /> <span className="hidden sm:inline">{user?.fullName?.split(" ")[0] ?? t("nav.account")}</span>

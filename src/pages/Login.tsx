@@ -91,7 +91,10 @@ export default function Login() {
 
       setAuth(result.token, result.user);
       setSuccess(mode === "register" ? t("auth.successRegister") : t("auth.successLogin"));
-      setTimeout(() => navigate("/"), 800);
+      // Buyers land on their dashboard; other roles keep the marketplace home.
+      const isBuyer =
+        result.user.role === "individual_buyer" || result.user.role === "corporate_buyer";
+      setTimeout(() => navigate(isBuyer ? "/dashboard" : "/"), 800);
     } catch (err) {
       setError(apiError(err));
     } finally {
