@@ -21,11 +21,6 @@ export default function Layout({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Announcement bar */}
-      <div className="bg-forest-950 text-cream/80 text-center text-xs font-mono py-1.5 px-4">
-        {t("home.announce")}
-      </div>
-
       <header className="bg-forest-800">
         {/* Top row: logo · search · utility */}
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-4 justify-between">
