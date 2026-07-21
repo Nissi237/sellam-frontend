@@ -16,14 +16,26 @@ import fabricRolls from "../assets/home/fabric-rolls.jpg";
 import fabricShop from "../assets/home/category-textiles.jpg";
 import fabricAlley from "../assets/home/hero-market-fabrics.jpg";
 
+// Authentic seller-supplied Douala market photos for specific popular products.
+import plantainsPhoto from "../assets/products/plantains-market.jpg";
+import potatoesPhoto from "../assets/products/potatoes.jpg";
+import tomatoesPhoto from "../assets/products/tomatoes.jpg";
+import shrimpDriedPhoto from "../assets/products/shrimp-dried.jpg";
+import shrimpFreshPhoto from "../assets/products/shrimp-fresh.jpg";
+import crabsPhoto from "../assets/products/crabs.jpg";
+
 // name keyword -> image. Order matters (first match wins); keep specific first.
 const KEYWORDS: [RegExp, string][] = [
-  [/plantain|banane|banana/i, plantainsBunch],
-  [/crevette|shrimp|crabe|crab|fruits de mer|seafood/i, fish],
+  [/plantain|banane|banana/i, plantainsPhoto],
+  // Dried/smoked shrimp must be matched before the generic shrimp rule below.
+  [/crevettes?\s*(s(e|é)ch|fum)/i, shrimpDriedPhoto],
+  [/crevette|shrimp/i, shrimpFreshPhoto],
+  [/crabe|crab|fruits de mer|seafood/i, crabsPhoto],
   [/poisson|fish|maquereau|bar\b/i, fish],
+  [/pommes? de terre|patate|potato|igname|yam|tubercule|manioc|cassava/i, potatoesPhoto],
+  [/tomate|tomato/i, tomatoesPhoto],
+  [/piment|pepper|oignon|onion|l(e|é)gume|vegetable|l(e|é)gumineuse/i, vegMarket],
   [/riz|rice|ma(i|ï)s|corn|arachide|groundnut|peanut|cacahu|haricot|bean|lentille|c(e|é)r(e|é)ale|grain/i, riceSacks],
-  [/pomme de terre|patate|potato|igname|yam|tubercule|manioc|cassava/i, vegMarket],
-  [/tomate|tomato|piment|pepper|oignon|onion|l(e|é)gume|vegetable|l(e|é)gumineuse/i, vegMarket],
   [/tissu|pagne|textile|fabric|wax|kaba|ndop|robe|couture/i, fabricRolls],
 ];
 
