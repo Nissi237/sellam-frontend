@@ -23,6 +23,7 @@ import tomatoesPhoto from "../assets/products/tomatoes.jpg";
 import shrimpDriedPhoto from "../assets/products/shrimp-dried.jpg";
 import shrimpFreshPhoto from "../assets/products/shrimp-fresh.jpg";
 import crabsPhoto from "../assets/products/crabs.jpg";
+import craftsPhoto from "../assets/products/crafts.jpg";
 
 // name keyword -> image. Order matters (first match wins); keep specific first.
 const KEYWORDS: [RegExp, string][] = [
@@ -36,6 +37,7 @@ const KEYWORDS: [RegExp, string][] = [
   [/tomate|tomato/i, tomatoesPhoto],
   [/piment|pepper|oignon|onion|l(e|é)gume|vegetable|l(e|é)gumineuse/i, vegMarket],
   [/riz|rice|ma(i|ï)s|corn|arachide|groundnut|peanut|cacahu|haricot|bean|lentille|c(e|é)r(e|é)ale|grain/i, riceSacks],
+  [/artisanat|masque|mask|tam-?tam|djemb(e|é)|sculpture|statuette|calebasse|handicraft/i, craftsPhoto],
   [/tissu|pagne|textile|fabric|wax|kaba|ndop|robe|couture/i, fabricRolls],
 ];
 
