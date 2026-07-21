@@ -17,7 +17,8 @@ import fabricShop from "../assets/home/category-textiles.jpg";
 import fabricAlley from "../assets/home/hero-market-fabrics.jpg";
 
 // Authentic seller-supplied Douala market photos for specific popular products.
-import plantainsPhoto from "../assets/products/plantains-market.jpg";
+import plantainsGreenPhoto from "../assets/products/plantains-green.jpg";
+import plantainsRipePhoto from "../assets/products/plantains-ripe.jpg";
 import potatoesPhoto from "../assets/products/potatoes.jpg";
 import tomatoesPhoto from "../assets/products/tomatoes.jpg";
 import shrimpDriedPhoto from "../assets/products/shrimp-dried.jpg";
@@ -27,7 +28,9 @@ import craftsPhoto from "../assets/products/crafts.jpg";
 
 // name keyword -> image. Order matters (first match wins); keep specific first.
 const KEYWORDS: [RegExp, string][] = [
-  [/plantain|banane|banana/i, plantainsPhoto],
+  // Ripe (mûr) plantains before the generic plantain rule; green is the default.
+  [/(plantain|banane).*(m(u|û)r)|(m(u|û)r).*(plantain|banane)/i, plantainsRipePhoto],
+  [/plantain|banane|banana/i, plantainsGreenPhoto],
   // Dried/smoked shrimp must be matched before the generic shrimp rule below.
   [/crevettes?\s*(s(e|é)ch|fum)/i, shrimpDriedPhoto],
   [/crevette|shrimp/i, shrimpFreshPhoto],
