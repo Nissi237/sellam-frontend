@@ -5,7 +5,6 @@ import { ShieldCheck, Smartphone, Truck, ArrowRight } from "lucide-react";
 import ProductCard from "../components/ProductCard";
 import { fetchProducts } from "../api/endpoints";
 import type { Product } from "../types/product";
-import heroImg from "../assets/home/hero-market-fabrics.jpg";
 import produceImg from "../assets/home/category-produce.jpg";
 import groceriesImg from "../assets/home/category-groceries.jpg";
 import textilesImg from "../assets/home/category-textiles.jpg";
@@ -18,7 +17,6 @@ import fallbackImg from "../assets/home/fallback-produce.jpg";
 // guarantees every tile shows a relevant photo even if an image fails to load.
 const FALLBACK = fallbackImg;
 const IMG = {
-  hero: heroImg,
   produce: produceImg,
   groceries: groceriesImg,
   textiles: textilesImg,
@@ -26,6 +24,11 @@ const IMG = {
   promo2: promoRice,
   promo3: promoPlantains,
 };
+
+// Rotating hero banner — the panel has a fixed height (see JSX) and each image
+// is object-cover, so no image ever stretches the hero. To use different hero
+// photos, just swap the entries in this array (add imports above).
+const HERO_IMAGES = [produceImg, textilesImg, promoFish];
 
 /** Swap a broken remote image for a known-good relevant photo. */
 const onImgError = (e: React.SyntheticEvent<HTMLImageElement>) => {
@@ -43,12 +46,20 @@ export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCat, setActiveCat] = useState<string>("all");
+  const [heroIdx, setHeroIdx] = useState(0);
 
   useEffect(() => {
     fetchProducts()
       .then(setProducts)
       .catch(() => setProducts([]))
       .finally(() => setLoading(false));
+  }, []);
+
+  // Rotate the hero banner every few seconds (crossfade handled in the JSX).
+  useEffect(() => {
+    if (HERO_IMAGES.length < 2) return;
+    const id = setInterval(() => setHeroIdx((i) => (i + 1) % HERO_IMAGES.length), 5000);
+    return () => clearInterval(id);
   }, []);
 
   const countFor = (value: string) => products.filter((p) => p.category === value).length;
@@ -78,8 +89,8 @@ export default function Home() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 sm:py-8">
-      {/* ---- Hero ---- */}
-      <section className="receipt-stub overflow-hidden grid md:grid-cols-2 border border-forest-300 mb-10">
+      {/* ---- Hero (fixed-height banner, rotating image) ---- */}
+      <section className="receipt-stub overflow-hidden grid md:grid-cols-2 border border-forest-300 mb-10 md:h-[420px]">
         <div className="bg-forest-300/40 p-8 sm:p-10 flex flex-col justify-center order-2 md:order-1">
           <p className="font-mono text-xs sm:text-sm text-clay uppercase tracking-widest mb-3">
             {t("home.eyebrow")}
@@ -100,13 +111,18 @@ export default function Home() {
             {t("home.shopNow")} <ArrowRight size={18} />
           </Link>
         </div>
-        <div className="order-1 md:order-2 min-h-[220px] md:min-h-0">
-          <img
-            src={IMG.hero}
-            onError={onImgError}
-            alt={t("home.headline")}
-            className="w-full h-full object-cover"
-          />
+        <div className="relative order-1 md:order-2 h-56 sm:h-72 md:h-full bg-forest-950">
+          {HERO_IMAGES.map((src, i) => (
+            <img
+              key={i}
+              src={src}
+              onError={onImgError}
+              alt={t("home.headline")}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+                i === heroIdx ? "opacity-100" : "opacity-0"
+              }`}
+            />
+          ))}
         </div>
       </section>
 
