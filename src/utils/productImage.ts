@@ -19,9 +19,11 @@ import fabricAlley from "../assets/home/hero-market-fabrics.jpg";
 // name keyword -> image. Order matters (first match wins); keep specific first.
 const KEYWORDS: [RegExp, string][] = [
   [/plantain|banane|banana/i, plantainsBunch],
-  [/riz|rice/i, riceSacks],
-  [/tomate|tomato|piment|pepper|oignon|onion|l(e|é)gume|vegetable/i, vegMarket],
+  [/crevette|shrimp|crabe|crab|fruits de mer|seafood/i, fish],
   [/poisson|fish|maquereau|bar\b/i, fish],
+  [/riz|rice|ma(i|ï)s|corn|arachide|groundnut|peanut|cacahu|haricot|bean|lentille|c(e|é)r(e|é)ale|grain/i, riceSacks],
+  [/pomme de terre|patate|potato|igname|yam|tubercule|manioc|cassava/i, vegMarket],
+  [/tomate|tomato|piment|pepper|oignon|onion|l(e|é)gume|vegetable|l(e|é)gumineuse/i, vegMarket],
   [/tissu|pagne|textile|fabric|wax|kaba|ndop|robe|couture/i, fabricRolls],
 ];
 
